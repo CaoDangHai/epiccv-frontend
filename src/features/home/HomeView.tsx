@@ -26,6 +26,7 @@ const HomeView: React.FC = () => {
   } = useHomeView();
 
   const jdTextLength = watch("jdText")?.length || 0;
+  const cvFile = watch("cvFile");
 
   return (
     <div className="p-8 lg:p-12 relative">
@@ -97,6 +98,12 @@ const HomeView: React.FC = () => {
                       register("cvFile").onChange(e);
                     }}
                   />
+                  {cvFile?.[0] && (
+                    <div className="flex items-center gap-2 mt-2 text-sm text-green-600">
+                      ✅ <span>{cvFile[0].name}</span>
+                      <span className="text-gray-400">({(cvFile[0].size / 1024).toFixed(0)} KB)</span>
+                    </div>
+                  )}
                 </label>
                 {errors.cvFile && (
                   <p className="text-red-500 text-sm mt-2 font-medium">{errors.cvFile.message}</p>

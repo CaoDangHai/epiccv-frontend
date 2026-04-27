@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { uploadCV } from '../../api/cvApi';
+
 
 import type { HomeFormValues, SavedCV, UseHomeViewReturn } from './types';
 
@@ -40,9 +42,29 @@ export const useHomeView = (): any => { // Dùng type UseHomeViewReturn nếu b�
         return true;
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            toast.success(`Đang xử lý file: ${e.target.files[0].name}`, { duration: 2000 });
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        // 1. Nếu không chọn file thì thoát luôn
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        const file = e.target.files[0];
+        
+        // 2. Bọc try catch để xem lỗi ở đâu
+        try {
+            toast.success(`Bắt đầu tải lên: ${file.name}`, { duration: 2000 });
+            
+            const result = await uploadCV(file);
+            
+            // 3. Nếu không lỗi, dòng này chắc chắn sẽ chạy
+            console.log("DỮ LIỆU TỪ BACKEND TRẢ VỀ:", result);
+            toast.success(`Trích xuất thành công: ${file.name}`, { duration: 2000 });
+
+        } catch (error) {
+            // 4. Nếu bị lỗi, nó sẽ nhảy vào đây
+            console.error("LỖI RỒI BẠN ƠI:", error);
+            toast.error("Tải file thất bại, hãy check console trình duyệt!");
+        } finally {
+            // Reset lại input để có thể chọn lại đúng file đó lần nữa
+            e.target.value = '';
         }
     };
 
@@ -51,6 +73,7 @@ export const useHomeView = (): any => { // Dùng type UseHomeViewReturn nếu b�
         console.log("Dữ liệu form:", data);
         toast.loading('AI Đang phân tích dữ liệu...', { duration: 3000 });
         //call api
+        
     };
 
     const handleDeleteCvClick = (e: React.MouseEvent, index: number) => {
