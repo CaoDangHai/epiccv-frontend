@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 
 import { SignIn } from "../features/auth/components/SignIn";
 import { SignUp } from "../features/auth/components/SignUp";
@@ -10,6 +10,7 @@ import { AnalysisView } from "../features/analysis";
 import { HistoryView } from "../features/history";
 import { SettingsView } from "../features/settings";
 import { ProfileView } from "../features/profile";
+import { MezonCallback } from "../features/auth/components/MezonCallback";
 
 const AppRoutes: React.FC = () => (
   <BrowserRouter>
@@ -20,6 +21,7 @@ const AppRoutes: React.FC = () => (
       {/* Routes Không cần Layout (Auth) */}
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-up" element={<SignUp />} />
+      <Route path="/auth/mezon/callback" element={<MezonCallback />} />
 
       {/* Routes Cần Layout (Đã Login) */}
       <Route element={<MainLayout />}>
