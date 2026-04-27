@@ -1,37 +1,36 @@
-import js from "@eslint/js";
-import tseslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
-import react from "eslint-plugin-react";
-import reactHooks from "eslint-plugin-react-hooks";
-import prettierPlugin from "eslint-plugin-prettier";
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
 
-export default [
-  js.configs.recommended,
+export default tseslint.config(
+  // Block 1: Cấu hình ignores global cho toàn dự án
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    ignores: ['dist', '**/.gitkeep'],
+  },
+
+  // Block 2: Kế thừa ruleset mặc định (BẮT BUỘC PHẢI TÁCH RỜI)
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+
+  // Block 3: Cấu hình linting chính cho React/TS
+  {
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-      },
-      globals: {
-        document: "readonly",
-        HTMLElement: "readonly"
-      }
+      ecmaVersion: 2020,
+      globals: globals.browser,
     },
     plugins: {
-      "@typescript-eslint": tseslint,
-      react,
-      "react-hooks": reactHooks,
-      prettier: prettierPlugin,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
     },
     rules: {
-      "prettier/prettier": "warn",
-      "react/react-in-jsx-scope": "off",
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
     },
-    settings: {
-      react: { version: "detect" }
-    }
   }
-];
+);
