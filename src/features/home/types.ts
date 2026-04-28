@@ -25,6 +25,7 @@ export interface UseHomeViewReturn {
 
     selectedCv: number;
     setSelectedCv: (index: number) => void;
+    toggleSelectCv: (index: number) => void;
     savedCVs: SavedCV[];
 
     isDeleteModalOpen: boolean;
@@ -33,7 +34,7 @@ export interface UseHomeViewReturn {
     handleDeleteCvClick: (e: React.MouseEvent, index: number) => void;
     cvToDelete: number | null;
 
-    handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleFileChange: (e: React.ChangeEvent<HTMLInputElement>, fileType: string) => void;
     onAnalyze: (data: HomeFormValues) => void;
     validateFile: (fileList: FileList) => string | boolean;
 }

@@ -35,7 +35,7 @@ export const MezonCallback: React.FC = () => {
       try {
         const response = await apiClient.post("/auth/mezon", { code, state: returnedState });
 
-        localStorage.setItem("access_token", response.data.access_token);
+        localStorage.setItem("access_token", response.data.accessToken);
         if (response.data.user) {
           localStorage.setItem("user_info", JSON.stringify(response.data.user));
         }

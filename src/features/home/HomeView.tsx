@@ -27,9 +27,15 @@ const HomeView: React.FC = () => {
 
   const jdTextLength = watch("jdText")?.length || 0;
   const cvFile = watch("cvFile");
+  const jdFile = watch("jdFile");
+
+  // SỬA BƯỚC 1: Tách hàm onChange mặc định của react-hook-form ra khỏi thuộc tính register
+  const { onChange: cvOnChange, ...cvRegisterRest } = register("cvFile", { validate: validateFile });
+  const { onChange: jdOnChange, ...jdRegisterRest } = register("jdFile", { validate: validateFile });
 
   return (
     <div className="p-8 lg:p-12 relative">
+      {/* ... Phần header giữ nguyên ... */}
       <header className="mb-12">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-tight">
           Design your <span className="text-[var(--color-primary)] italic">dream</span> career path.
@@ -47,6 +53,7 @@ const HomeView: React.FC = () => {
         {/* --- BLOCK 1: YOUR CV --- */}
         <div className="xl:col-span-5 group">
           <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-500 h-full flex flex-col">
+            {/* ... Tiêu đề giữ nguyên ... */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
@@ -92,15 +99,16 @@ const HomeView: React.FC = () => {
                     type="file"
                     className="absolute inset-0 opacity-0 cursor-pointer"
                     accept=".pdf,.docx,.doc"
-                    {...register("cvFile", { validate: validateFile })}
+                    {...cvRegisterRest} /* SỬA BƯỚC 2: Rải các thuộc tính ref, onBlur, name... */
                     onChange={(e) => {
-                      handleFileChange(e);
-                      register("cvFile").onChange(e);
+                      handleFileChange(e, "CV"); // Hiển thị Toast thông báo
+                      cvOnChange(e);             // react-hook-form nhận dữ liệu và kích hoạt watch()
                     }}
                   />
                   {cvFile?.[0] && (
-                    <div className="flex items-center gap-2 mt-2 text-sm text-green-600">
-                      ✅ <span>{cvFile[0].name}</span>
+                    <div className="flex items-center gap-2 mt-4 text-sm text-green-600 font-medium">
+                      <span className="material-symbols-outlined text-base">check_circle</span>
+                      <span>{cvFile[0].name}</span>
                       <span className="text-gray-400">({(cvFile[0].size / 1024).toFixed(0)} KB)</span>
                     </div>
                   )}
@@ -112,6 +120,7 @@ const HomeView: React.FC = () => {
             )}
 
             {credentialsTab === "saved" && (
+               /* ... Tab saved giữ nguyên ... */
               <div className="flex-1 overflow-hidden">
                 <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -233,8 +242,19 @@ const HomeView: React.FC = () => {
                   type="file"
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   accept=".pdf,.docx,.doc"
-                  {...register("jdFile", { validate: validateFile })}
+                  {...jdRegisterRest} /* SỬA BƯỚC 3: Rải các thuộc tính cho JD Input */
+                  onChange={(e) => {
+                    handleFileChange(e, "JD File"); // Hiển thị Toast thông báo cho JD
+                    jdOnChange(e);                  // react-hook-form nhận dữ liệu JD
+                  }}
                 />
+                {jdFile?.[0] && (
+                  <div className="flex items-center gap-2 mt-4 text-sm text-green-600 font-medium">
+                    <span className="material-symbols-outlined text-base">check_circle</span>
+                    <span>{jdFile[0].name}</span>
+                    <span className="text-gray-400">({(jdFile[0].size / 1024).toFixed(0)} KB)</span>
+                  </div>
+                )}
               </label>
             )}
             {errors.jdFile && (
@@ -243,6 +263,8 @@ const HomeView: React.FC = () => {
           </div>
         </div>
 
+        {/* ... PHẦN CÒN LẠI GIỮ NGUYÊN (Block 3, grid 3 cột, Modal) ... */}
+        
         {/* --- BLOCK 3: SUBMIT ACTION --- */}
         <div className="xl:col-span-12 mt-4">
           <div className="bg-[var(--color-primary)]/5 rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center justify-between gap-8 border border-[var(--color-primary)]/10">
@@ -272,39 +294,33 @@ const HomeView: React.FC = () => {
           </div>
         </div>
 
-        {/* --- SỬA: Thay thế Recent Resumes bằng Feature Grid --- */}
+        {/* Feature Grid */}
         <div className="xl:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-          {/* Khối 1 */}
           <div className="p-8 rounded-3xl bg-[#f8f9ff] border border-blue-100/50 shadow-sm">
             <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-sm">
               <span className="material-symbols-outlined text-blue-600">psychology</span>
             </div>
             <h5 className="text-lg font-bold text-slate-900 mb-2">Semantic Matching</h5>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Going beyond keywords. We analyze the intent and hierarchy of the job role
-              requirements.
+              Going beyond keywords. We analyze the intent and hierarchy of the job role requirements.
             </p>
           </div>
-          {/* Khối 2 */}
           <div className="p-8 rounded-3xl bg-[#f8f9ff] border border-blue-100/50 shadow-sm">
             <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-sm">
               <span className="material-symbols-outlined text-purple-600">map</span>
             </div>
             <h5 className="text-lg font-bold text-slate-900 mb-2">Technical Roadmap</h5>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Don't just apply. Learn. We provide a step-by-step guide to bridge your current skill
-              gaps.
+              Don't just apply. Learn. We provide a step-by-step guide to bridge your current skill gaps.
             </p>
           </div>
-          {/* Khối 3 */}
           <div className="p-8 rounded-3xl bg-[#f8f9ff] border border-blue-100/50 shadow-sm">
             <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-sm">
               <span className="material-symbols-outlined text-blue-500">auto_fix_high</span>
             </div>
             <h5 className="text-lg font-bold text-slate-900 mb-2">AI Polishing</h5>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Instant grammar and tone adjustments to ensure you sound like the leader the company
-              needs.
+              Instant grammar and tone adjustments to ensure you sound like the leader the company needs.
             </p>
           </div>
         </div>

@@ -55,6 +55,8 @@ export const useSignIn = () => {
     const redirectUri = import.meta.env.VITE_MEZON_REDIRECT_URI || "";
     const state = generateMezonState(11);
 
+    
+
     localStorage.setItem("mezon_oauth_state", state);
 
     const params = new URLSearchParams({
