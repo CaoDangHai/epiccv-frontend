@@ -28,6 +28,7 @@ const AppRoutes: React.FC = () => (
         <Route path="/home" element={<HomeView />} />
         {/* Sau này bạn có thể thêm /history, /settings vào đây */}
         <Route path="/analysis" element={<AnalysisView />} />
+        <Route path="/analysis/:id" element={<AnalysisView />} />
         <Route path="/history" element={<HistoryView />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/profile" element={<ProfileView />} />

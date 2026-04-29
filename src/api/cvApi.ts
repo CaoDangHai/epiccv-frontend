@@ -1,16 +1,19 @@
-export const uploadCV = async (file: File) => {
-  const token = localStorage.getItem('access_token');
+import { apiClient } from "../utils/apiClient";
+import type { AnalysisResult } from "../features/analysis/types";
 
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const response = await fetch('http://localhost:3000/api/cv/process', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`, // ← gửi token
-    },
-    body: formData,
+export const processCV = async (formData: FormData): Promise<AnalysisResult> => {
+  const response = await apiClient.post<AnalysisResult>("/cv/process", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
-  if (!response.ok) throw new Error(`Lỗi: ${response.status}`);
-  return response.json();
+  return response.data;
+};
+
+export const getAnalysisHistory = async (): Promise<AnalysisResult[]> => {
+  const response = await apiClient.get<AnalysisResult[]>("/cv/reports");
+  return response.data;
+};
+
+export const getAnalysisById = async (id: string): Promise<AnalysisResult> => {
+  const response = await apiClient.get<AnalysisResult>(`/cv/analysis/${id}`);
+  return response.data;
 };

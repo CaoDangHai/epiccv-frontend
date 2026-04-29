@@ -19,7 +19,6 @@ const HomeView: React.FC = () => {
     cancelDelete,
     confirmDelete,
     handleDeleteCvClick,
-    handleFileChange,
     onAnalyze,
     validateFile,
     toggleSelectCv,
@@ -30,8 +29,12 @@ const HomeView: React.FC = () => {
   const jdFile = watch("jdFile");
 
   // SỬA BƯỚC 1: Tách hàm onChange mặc định của react-hook-form ra khỏi thuộc tính register
-  const { onChange: cvOnChange, ...cvRegisterRest } = register("cvFile", { validate: validateFile });
-  const { onChange: jdOnChange, ...jdRegisterRest } = register("jdFile", { validate: validateFile });
+  const { onChange: cvOnChange, ...cvRegisterRest } = register("cvFile", {
+    validate: (value) => validateFile(value),
+  });
+  const { onChange: jdOnChange, ...jdRegisterRest } = register("jdFile", {
+    validate: (value) => validateFile(value),
+  });
 
   return (
     <div className="p-8 lg:p-12 relative">
@@ -101,15 +104,16 @@ const HomeView: React.FC = () => {
                     accept=".pdf,.docx,.doc"
                     {...cvRegisterRest} /* SỬA BƯỚC 2: Rải các thuộc tính ref, onBlur, name... */
                     onChange={(e) => {
-                      handleFileChange(e, "CV"); // Hiển thị Toast thông báo
-                      cvOnChange(e);             // react-hook-form nhận dữ liệu và kích hoạt watch()
+                      cvOnChange(e); // react-hook-form nhận dữ liệu và kích hoạt watch()
                     }}
                   />
                   {cvFile?.[0] && (
                     <div className="flex items-center gap-2 mt-4 text-sm text-green-600 font-medium">
                       <span className="material-symbols-outlined text-base">check_circle</span>
                       <span>{cvFile[0].name}</span>
-                      <span className="text-gray-400">({(cvFile[0].size / 1024).toFixed(0)} KB)</span>
+                      <span className="text-gray-400">
+                        ({(cvFile[0].size / 1024).toFixed(0)} KB)
+                      </span>
                     </div>
                   )}
                 </label>
@@ -120,7 +124,7 @@ const HomeView: React.FC = () => {
             )}
 
             {credentialsTab === "saved" && (
-               /* ... Tab saved giữ nguyên ... */
+              /* ... Tab saved giữ nguyên ... */
               <div className="flex-1 overflow-hidden">
                 <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -244,8 +248,7 @@ const HomeView: React.FC = () => {
                   accept=".pdf,.docx,.doc"
                   {...jdRegisterRest} /* SỬA BƯỚC 3: Rải các thuộc tính cho JD Input */
                   onChange={(e) => {
-                    handleFileChange(e, "JD File"); // Hiển thị Toast thông báo cho JD
-                    jdOnChange(e);                  // react-hook-form nhận dữ liệu JD
+                    jdOnChange(e); // react-hook-form nhận dữ liệu JD
                   }}
                 />
                 {jdFile?.[0] && (
@@ -264,7 +267,7 @@ const HomeView: React.FC = () => {
         </div>
 
         {/* ... PHẦN CÒN LẠI GIỮ NGUYÊN (Block 3, grid 3 cột, Modal) ... */}
-        
+
         {/* --- BLOCK 3: SUBMIT ACTION --- */}
         <div className="xl:col-span-12 mt-4">
           <div className="bg-[var(--color-primary)]/5 rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center justify-between gap-8 border border-[var(--color-primary)]/10">
@@ -302,7 +305,8 @@ const HomeView: React.FC = () => {
             </div>
             <h5 className="text-lg font-bold text-slate-900 mb-2">Semantic Matching</h5>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Going beyond keywords. We analyze the intent and hierarchy of the job role requirements.
+              Going beyond keywords. We analyze the intent and hierarchy of the job role
+              requirements.
             </p>
           </div>
           <div className="p-8 rounded-3xl bg-[#f8f9ff] border border-blue-100/50 shadow-sm">
@@ -311,7 +315,8 @@ const HomeView: React.FC = () => {
             </div>
             <h5 className="text-lg font-bold text-slate-900 mb-2">Technical Roadmap</h5>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Don't just apply. Learn. We provide a step-by-step guide to bridge your current skill gaps.
+              Don't just apply. Learn. We provide a step-by-step guide to bridge your current skill
+              gaps.
             </p>
           </div>
           <div className="p-8 rounded-3xl bg-[#f8f9ff] border border-blue-100/50 shadow-sm">
@@ -320,7 +325,8 @@ const HomeView: React.FC = () => {
             </div>
             <h5 className="text-lg font-bold text-slate-900 mb-2">AI Polishing</h5>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Instant grammar and tone adjustments to ensure you sound like the leader the company needs.
+              Instant grammar and tone adjustments to ensure you sound like the leader the company
+              needs.
             </p>
           </div>
         </div>

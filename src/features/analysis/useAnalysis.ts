@@ -1,105 +1,116 @@
-import { useState, useMemo } from 'react';
-import { mockReports } from './mockData';
-import type { Report, StepStatus } from './types';
+import { useState, useEffect, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { getAnalysisHistory, getAnalysisById } from "../../api/cvApi";
+import type { AnalysisResult } from "./types";
+import { mockReports } from "./mockData";
 
 export const useAnalysis = () => {
-    const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
-    const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
-    const [activeTab, setActiveTab] = useState<string>('roadmap');
-    const [selectedPhase, setSelectedPhase] = useState<number>(1);
-    const [reports, setReports] = useState<Report[]>(mockReports);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    const selectedReport = useMemo(() =>
-        reports.find(r => r.id === selectedReportId),
-        [reports, selectedReportId]);
+  const [viewMode, setViewMode] = useState<"list" | "detail">("list");
+  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [selectedPhase, setSelectedPhase] = useState<number>(1);
 
-    const handleBack = () => {
-        setViewMode('list');
-        setSelectedReportId(null);
-        setActiveTab('roadmap');
-        setSelectedPhase(1);
+  const [analysisList, setAnalysisList] = useState<AnalysisResult[]>([]);
+  const [analysisData, setAnalysisData] = useState<AnalysisResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const selectedReportMock = useMemo(() => mockReports[0], []);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getAnalysisHistory();
+        setAnalysisList(data);
+
+        const targetId = location.state?.targetReportId;
+        if (targetId) {
+          handleSelectReport(targetId);
+          navigate("/analysis", { replace: true, state: {} });
+        }
+      } catch (error) {
+        console.error("Lỗi lấy danh sách:", error);
+        toast.error("Failed to load reports");
+      } finally {
+        setIsLoading(false);
+      }
     };
+    fetchHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    const handleSelectReport = (id: number) => {
-        setSelectedReportId(id);
-        setViewMode('detail');
-        setSelectedPhase(1);
-        setActiveTab('roadmap');
-    };
+  const handleBack = () => {
+    setViewMode("list");
+    setActiveTab("overview");
+    setSelectedPhase(1);
+    setAnalysisData(null);
+  };
 
-    const checkPhaseDone = (phaseId: number) => {
-        if (!selectedReport?.phases) return false;
-        const phase = selectedReport.phases[phaseId];
-        return (phase?.steps || []).every(s => s.status === 'Done');
-    };
+  const handleSelectReport = async (id: string) => {
+    setViewMode("detail");
+    setSelectedPhase(1);
+    setActiveTab("overview");
 
-    const isPhaseUnlocked = (phaseId: number) => {
-        if (phaseId === 1) return true;
-        if (!selectedReport?.phases) return false;
-        const phaseIds = Object.keys(selectedReport.phases).map(Number).filter(id => id < phaseId).sort((a, b) => a - b);
-        return phaseIds.every(id => checkPhaseDone(id));
-    };
+    setIsLoading(true);
+    try {
+      const data = await getAnalysisById(id);
+      setAnalysisData(data);
+    } catch {
+      toast.error("Failed to load report details");
+      handleBack();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const updateStepStatus = (phaseId: number, stepIndex: number, newStatus: StepStatus) => {
-        setReports(prevReports => {
-            return prevReports.map(report => {
-                if (report.id !== selectedReportId) return report;
+  const checkPhaseDone = (phaseId: number) => {
+    if (!selectedReportMock?.phases) return false;
+    const phase = selectedReportMock.phases[phaseId];
+    return (phase?.steps || []).every((s) => s.status === "Done");
+  };
 
-                const updatedPhases = { ...report.phases };
-                const currentPhase = { ...updatedPhases[phaseId] };
-                const newSteps = [...(currentPhase.steps || [])];
+  const isPhaseUnlocked = (phaseId: number) => {
+    if (phaseId === 1) return true;
+    if (!selectedReportMock?.phases) return false;
+    const phaseIds = Object.keys(selectedReportMock.phases)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const currentIndex = phaseIds.indexOf(phaseId);
+    if (currentIndex <= 0) return true;
+    const prevPhaseId = phaseIds[currentIndex - 1];
+    return checkPhaseDone(prevPhaseId);
+  };
 
-                const oldStatus = newSteps[stepIndex].status;
-                newSteps[stepIndex].status = newStatus;
+  const onTabChange = (tab: string) => {
+    if (tab !== "overview") {
+      toast("Please Generate a Roadmap to unlock this section.", { icon: "🔒" });
+      return;
+    }
+    setActiveTab(tab);
+  };
 
-                // Reset các step sau nếu thay đổi từ Done -> Not Done
-                if (oldStatus === 'Done' && newStatus !== 'Done') {
-                    for (let i = stepIndex + 1; i < newSteps.length; i++) {
-                        newSteps[i] = { ...newSteps[i], status: 'To Do' };
-                    }
-                }
+  const updateStepStatus = () => {};
 
-                currentPhase.steps = newSteps;
-                updatedPhases[phaseId] = currentPhase;
+  const globalProgress = 0;
 
-                const phaseDoneNow = newSteps.every(s => s.status === 'Done');
-                if (!phaseDoneNow) {
-                    const phaseIds = Object.keys(updatedPhases).map(Number).sort((a, b) => a - b);
-                    phaseIds.forEach(id => {
-                        if (id > phaseId) {
-                            const p = { ...updatedPhases[id] };
-                            p.steps = (p.steps || []).map(step => ({ ...step, status: 'To Do' }));
-                            updatedPhases[id] = p;
-                        }
-                    });
-                }
-
-                return { ...report, phases: updatedPhases };
-            });
-        });
-    };
-
-    const globalProgress = useMemo(() => {
-        if (!selectedReport?.phases) return 0;
-        const allSteps = Object.values(selectedReport.phases).flatMap(p => p.steps || []);
-        if (allSteps.length === 0) return 0;
-        const completed = allSteps.filter(s => s.status === 'Done').length;
-        return Math.round((completed / allSteps.length) * 100);
-    }, [selectedReport]);
-
-    return {
-        viewMode,
-        reports,
-        selectedReport,
-        activeTab,
-        setActiveTab,
-        selectedPhase,
-        setSelectedPhase,
-        globalProgress,
-        handleBack,
-        handleSelectReport,
-        checkPhaseDone,
-        isPhaseUnlocked,
-        updateStepStatus
-    };
+  return {
+    viewMode,
+    reports: analysisList,
+    analysisData,
+    selectedReport: selectedReportMock,
+    activeTab,
+    setActiveTab: onTabChange,
+    selectedPhase,
+    setSelectedPhase,
+    globalProgress,
+    handleBack,
+    handleSelectReport,
+    checkPhaseDone,
+    isPhaseUnlocked,
+    updateStepStatus,
+    isLoading,
+  };
 };
