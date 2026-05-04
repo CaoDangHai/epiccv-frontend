@@ -63,3 +63,43 @@ export interface AnalysisResult {
   missing_skills: SkillGap[];
   created_at?: string;
 }
+
+// --- ROADMAP TYPES ---
+export interface LearningResource {
+  title: string;
+  url: string;
+  resource_type: string;
+  duration?: string;
+  description?: string;
+}
+
+export interface LearningOutcome {
+  skill_name: string;
+  target_level: string;
+  achieved_competencies: string[];
+}
+
+export interface RoadmapStep {
+  id?: string;
+  order: number;
+  title: string;
+  description: string;
+  linked_skill_gaps: string[];
+  focus_skills: string[];
+  estimated_duration: string;
+  key_topics: string[];
+  resources: LearningResource[];
+  ui_color: string;
+  is_completed: boolean;
+}
+
+export interface Roadmap {
+  id?: string;
+  target_job_title: string;
+  summary: string;
+  difficulty: string;
+  estimated_total_time: string;
+  steps: RoadmapStep[];
+  final_outcomes: LearningOutcome[];
+  mentor_advice?: string;
+}

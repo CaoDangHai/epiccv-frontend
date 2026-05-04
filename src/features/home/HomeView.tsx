@@ -22,6 +22,7 @@ const HomeView: React.FC = () => {
     onAnalyze,
     validateFile,
     toggleSelectCv,
+    isLoading,
   } = useHomeView();
 
   const jdTextLength = watch("jdText")?.length || 0;
@@ -287,12 +288,11 @@ const HomeView: React.FC = () => {
             <Button
               variant="unstyled"
               type="submit"
-              className="whitespace-nowrap bg-[#0d99ff] text-white px-10 py-5 rounded-full font-bold text-lg shadow-xl shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-4 group"
+              disabled={isLoading}
+              className={`whitespace-nowrap bg-[#0d99ff] text-white px-10 py-5 rounded-full font-bold text-lg shadow-xl 
+                ${isLoading ? "opacity-60 cursor-not-allowed" : "hover:scale-[1.02] active:scale-[0.98]"}`}
             >
-              Analyze & Generate
-              <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
-                arrow_forward
-              </span>
+              {isLoading ? "Processing..." : "Analyze & Generate"}
             </Button>
           </div>
         </div>

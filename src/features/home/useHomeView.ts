@@ -15,6 +15,7 @@ export const useHomeView = (): UseHomeViewReturn => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [cvToDelete, setCvToDelete] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -68,6 +69,7 @@ export const useHomeView = (): UseHomeViewReturn => {
     }
 
     const toastId = toast.loading("Analyzing your profile and JD...");
+    setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append("file", cvFileFromForm);
@@ -83,6 +85,8 @@ export const useHomeView = (): UseHomeViewReturn => {
     } catch (error) {
       console.error("Lỗi phân tích:", error);
       toast.error("Failed to analyze CV. Please try again.", { id: toastId });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -124,5 +128,6 @@ export const useHomeView = (): UseHomeViewReturn => {
     handleDeleteCvClick,
     confirmDelete,
     cancelDelete,
+    isLoading,
   };
 };

@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getAnalysisHistory, getAnalysisById } from "../../api/cvApi";
-import type { AnalysisResult } from "./types";
+import type { AnalysisResult, Roadmap } from "./types";
 import { mockReports } from "./mockData";
+import { generateRoadmap } from "../../api/cvApi";
 
 export const useAnalysis = () => {
   const location = useLocation();
@@ -18,6 +19,25 @@ export const useAnalysis = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const selectedReportMock = useMemo(() => mockReports[0], []);
+
+  // ---------------------- ROAD MAP-------------------------------------------------
+  const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerateRoadmap = async () => {
+    if (!analysisData?.id) return;
+    setIsGenerating(true);
+    try {
+      const data = await generateRoadmap(analysisData.id);
+      setRoadmap(data);
+      setActiveTab("phases"); // auto switch sang tab phases
+      toast.success("Roadmap generated successfully!");
+    } catch {
+      toast.error("Failed to generate roadmap");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -85,7 +105,11 @@ export const useAnalysis = () => {
   };
 
   const onTabChange = (tab: string) => {
-    if (tab !== "overview") {
+    if (tab === "phases" && !roadmap) {
+      toast("Please Generate a Roadmap to unlock this section.", { icon: "🔒" });
+      return;
+    }
+    if ((tab === "documentation" || tab === "status") && !roadmap) {
       toast("Please Generate a Roadmap to unlock this section.", { icon: "🔒" });
       return;
     }
@@ -112,5 +136,8 @@ export const useAnalysis = () => {
     isPhaseUnlocked,
     updateStepStatus,
     isLoading,
+    roadmap,
+    isGenerating,
+    handleGenerateRoadmap,
   };
 };

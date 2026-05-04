@@ -45,4 +45,6 @@ export interface UseHomeViewReturn {
     maxSizeMB?: number,
     allowedTypes?: string[]
   ) => string | boolean;
+
+  isLoading: boolean;
 }
