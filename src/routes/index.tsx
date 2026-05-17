@@ -7,7 +7,6 @@ import { SignUp } from "../features/auth/components/SignUp";
 import MainLayout from "../layouts/MainLayout";
 import { HomeView } from "../features/home"; // Import Feature Home
 import { AnalysisView } from "../features/analysis";
-import { HistoryView } from "../features/history";
 import { SettingsView } from "../features/settings";
 import { ProfileView } from "../features/profile";
 import { MezonCallback } from "../features/auth/components/MezonCallback";
@@ -26,10 +25,9 @@ const AppRoutes: React.FC = () => (
       {/* Routes Cần Layout (Đã Login) */}
       <Route element={<MainLayout />}>
         <Route path="/home" element={<HomeView />} />
-        {/* Sau này bạn có thể thêm /history, /settings vào đây */}
+        {}
         <Route path="/analysis" element={<AnalysisView />} />
         <Route path="/analysis/:id" element={<AnalysisView />} />
-        <Route path="/history" element={<HistoryView />} />
         <Route path="/settings" element={<SettingsView />} />
         <Route path="/profile" element={<ProfileView />} />
       </Route>

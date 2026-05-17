@@ -1,7 +1,6 @@
 import React from "react";
 import { useProfile } from "./useProfile";
 import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
 
 const ProfileView: React.FC = () => {
   const {
@@ -15,7 +14,6 @@ const ProfileView: React.FC = () => {
     handleFileChange,
   } = useProfile();
 
-  // Helper nhỏ để luân phiên màu cho Tags (để giống bản HTML gốc)
   const getSkillColorClass = (index: number) => {
     const colors = [
       "bg-primary/10 text-primary",
@@ -26,11 +24,11 @@ const ProfileView: React.FC = () => {
   };
 
   return (
-    <main className="pt-12 pb-12 px-6 max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
+    <div className="w-full flex flex-col md:flex-row gap-8 pb-12">
       {/* Side Profile Column (Editorial Layout) */}
-      <aside className="w-full md:w-1/3 flex flex-col gap-6">
+      <aside className="w-full md:w-1/3 lg:w-1/4 flex flex-col gap-6 shrink-0">
         {/* Back Navigation */}
-        <div className="mb-6">
+        <div className="mb-2">
           <Button
             variant="unstyled"
             onClick={handleBack}
@@ -93,9 +91,9 @@ const ProfileView: React.FC = () => {
               <div className="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-primary">mail</span>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-outline font-medium">Email</p>
-                <p className="text-sm font-semibold break-all">{personalInfo.email}</p>
+                <p className="text-sm font-semibold truncate">{personalInfo.email}</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -121,7 +119,7 @@ const ProfileView: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <section className="flex-1 flex flex-col gap-8">
+      <section className="flex-1 flex flex-col gap-8 min-w-0">
         {/* Skills Section (Tag Cloud) */}
         <div className="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_10px_30px_rgba(11,28,48,0.06)]">
           <div className="flex justify-between items-center mb-8">
@@ -206,15 +204,15 @@ const ProfileView: React.FC = () => {
         </div>
       </section>
 
-      {/* Input file ẩn, được điều khiển thông qua useRef */}
-      <Input
+      {/* ĐÃ SỬA: Thay <Input> bằng thẻ <input> tiêu chuẩn của HTML để không sinh ra div bao bọc làm bể layout */}
+      <input
         ref={fileInputRef}
         accept=".pdf,.doc,.docx"
         className="hidden"
         type="file"
         onChange={handleFileChange}
       />
-    </main>
+    </div>
   );
 };
 
