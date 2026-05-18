@@ -1,23 +1,18 @@
+import { apiClient } from "../utils/apiClient";
+
 // Gửi file PDF/DOC
 export const uploadJDFile = async (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch("http://localhost:3000/api/jd/process", {
-    method: "POST",
-    body: formData,
+  const response = await apiClient.post("/jd/process", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
-  if (!response.ok) throw new Error(`Lỗi: ${response.status}`);
-  return response.json();
+  return response.data;
 };
 
 // Gửi text
 export const uploadJDText = async (content: string) => {
-  const response = await fetch("http://localhost:3000/api/jd/process", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content }),
-  });
-  if (!response.ok) throw new Error(`Lỗi: ${response.status}`);
-  return response.json();
+  const response = await apiClient.post("/jd/process", { content });
+  return response.data;
 };

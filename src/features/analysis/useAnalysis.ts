@@ -1,10 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { getAnalysisHistory, getAnalysisById } from "../../api/cvApi";
+import {
+  getAnalysisHistory,
+  getAnalysisById,
+  getRoadmapFromDb,
+  generateRoadmapAI,
+  updateStepStatus,
+} from "../../api/cvApi";
 import type { AnalysisResult, Roadmap } from "./types";
-import { mockReports } from "./mockData";
-import { generateRoadmap } from "../../api/cvApi";
 
 export const useAnalysis = () => {
   const location = useLocation();
@@ -12,30 +16,50 @@ export const useAnalysis = () => {
 
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [activeTab, setActiveTab] = useState<string>("overview");
-  const [selectedPhase, setSelectedPhase] = useState<number>(1);
 
   const [analysisList, setAnalysisList] = useState<AnalysisResult[]>([]);
   const [analysisData, setAnalysisData] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const selectedReportMock = useMemo(() => mockReports[0], []);
-
-  // ---------------------- ROAD MAP-------------------------------------------------
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedPhase, setSelectedPhase] = useState<Roadmap["steps"][0] | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleGenerateRoadmap = async () => {
     if (!analysisData?.id) return;
     setIsGenerating(true);
     try {
-      const data = await generateRoadmap(analysisData.id);
+      const data = await generateRoadmapAI(analysisData.id);
       setRoadmap(data);
-      setActiveTab("phases"); // auto switch sang tab phases
+      setActiveTab("phases");
       toast.success("Roadmap generated successfully!");
     } catch {
       toast.error("Failed to generate roadmap");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleToggleStepStatus = async (stepId: string, currentStatus: boolean) => {
+    try {
+      await updateStepStatus(stepId, !currentStatus);
+      setRoadmap((prev: Roadmap | null) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          steps: prev.steps.map((s) =>
+            s.id === stepId ? { ...s, is_completed: !currentStatus } : s
+          ),
+        };
+      });
+      // Đổi state của Phase đang mở trong Drawer ngay lập tức
+      if (selectedPhase && selectedPhase.id === stepId) {
+        setSelectedPhase((prev) => (prev ? { ...prev, is_completed: !currentStatus } : null));
+      }
+    } catch (e) {
+      toast.error("Lỗi khi cập nhật trạng thái");
+      throw e;
     }
   };
 
@@ -65,19 +89,24 @@ export const useAnalysis = () => {
   const handleBack = () => {
     setViewMode("list");
     setActiveTab("overview");
-    setSelectedPhase(1);
+    setSelectedPhase(null);
     setAnalysisData(null);
+    setRoadmap(null); // Clear roadmap khi back ra list
   };
 
   const handleSelectReport = async (id: string) => {
     setViewMode("detail");
-    setSelectedPhase(1);
+    setSelectedPhase(null);
     setActiveTab("overview");
 
     setIsLoading(true);
+    setRoadmap(null);
     try {
       const data = await getAnalysisById(id);
       setAnalysisData(data);
+
+      const existingRoadmap = await getRoadmapFromDb(id);
+      if (existingRoadmap) setRoadmap(existingRoadmap);
     } catch {
       toast.error("Failed to load report details");
       handleBack();
@@ -86,58 +115,52 @@ export const useAnalysis = () => {
     }
   };
 
-  const checkPhaseDone = (phaseId: number) => {
-    if (!selectedReportMock?.phases) return false;
-    const phase = selectedReportMock.phases[phaseId];
-    return (phase?.steps || []).every((s) => s.status === "Done");
-  };
-
-  const isPhaseUnlocked = (phaseId: number) => {
-    if (phaseId === 1) return true;
-    if (!selectedReportMock?.phases) return false;
-    const phaseIds = Object.keys(selectedReportMock.phases)
-      .map(Number)
-      .sort((a, b) => a - b);
-    const currentIndex = phaseIds.indexOf(phaseId);
-    if (currentIndex <= 0) return true;
-    const prevPhaseId = phaseIds[currentIndex - 1];
-    return checkPhaseDone(prevPhaseId);
-  };
-
   const onTabChange = (tab: string) => {
-    if (tab === "phases" && !roadmap) {
-      toast("Please Generate a Roadmap to unlock this section.", { icon: "🔒" });
-      return;
-    }
-    if ((tab === "documentation" || tab === "status") && !roadmap) {
+    if ((tab === "phases" || tab === "documentation" || tab === "status") && !roadmap) {
       toast("Please Generate a Roadmap to unlock this section.", { icon: "🔒" });
       return;
     }
     setActiveTab(tab);
   };
 
-  const updateStepStatus = () => {};
+  const handleOpenPhaseDetail = (phase: Roadmap["steps"][0]) => {
+    setSelectedPhase(phase);
+    setIsDrawerOpen(true);
+  };
 
-  const globalProgress = 0;
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    setTimeout(() => setSelectedPhase(null), 300);
+  };
+
+  const progressStats = useMemo(() => {
+    if (!roadmap || !roadmap.steps) return { total: 0, completed: 0, percent: 0 };
+    const total = roadmap.steps.length;
+    const completed = roadmap.steps.filter((s) => s.is_completed).length;
+    return {
+      total,
+      completed,
+      percent: total === 0 ? 0 : Math.round((completed / total) * 100),
+    };
+  }, [roadmap]);
 
   return {
     viewMode,
     reports: analysisList,
     analysisData,
-    selectedReport: selectedReportMock,
     activeTab,
     setActiveTab: onTabChange,
-    selectedPhase,
-    setSelectedPhase,
-    globalProgress,
     handleBack,
     handleSelectReport,
-    checkPhaseDone,
-    isPhaseUnlocked,
-    updateStepStatus,
     isLoading,
     roadmap,
     isGenerating,
     handleGenerateRoadmap,
+    selectedPhase,
+    isDrawerOpen,
+    handleOpenPhaseDetail,
+    handleCloseDrawer,
+    handleToggleStepStatus,
+    progressStats,
   };
 };

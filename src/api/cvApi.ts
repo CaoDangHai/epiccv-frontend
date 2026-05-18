@@ -18,7 +18,18 @@ export const getAnalysisById = async (id: string): Promise<AnalysisResult> => {
   return response.data;
 };
 
-export const generateRoadmap = async (analysisId: string): Promise<Roadmap> => {
-  const response = await apiClient.post<Roadmap>(`/cv/roadmap/${analysisId}`);
+// --- ROADMAP APIs ---
+export const getRoadmapFromDb = async (analysisId: string): Promise<Roadmap | null> => {
+  const response = await apiClient.get(`/roadmap/${analysisId}`);
+  return response.data || null;
+};
+
+export const generateRoadmapAI = async (analysisId: string): Promise<Roadmap> => {
+  const response = await apiClient.post<Roadmap>(`/roadmap/generate/${analysisId}`);
+  return response.data;
+};
+
+export const updateStepStatus = async (stepId: string, isCompleted: boolean) => {
+  const response = await apiClient.patch(`/roadmap/step/${stepId}/status`, { isCompleted });
   return response.data;
 };

@@ -57,6 +57,10 @@ export interface SkillGap {
 
 export interface AnalysisResult {
   id: string;
+  cvName?: string;
+  jdName?: string;
+  cvUrl?: string;
+  jdUrl?: string;
   match_percentage: number;
   overall: OverallAssessment;
   matched_skills: SkillMatch[];
