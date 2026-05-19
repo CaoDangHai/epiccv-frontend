@@ -23,6 +23,8 @@ const AnalysisView: React.FC = () => {
     handleOpenPhaseDetail,
     handleCloseDrawer,
     handleToggleStepStatus,
+    loadingMessage,
+    generateProgress
   } = useAnalysis();
 
   return (
@@ -160,11 +162,10 @@ const AnalysisView: React.FC = () => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-4 relative font-bold text-sm transition-colors flex items-center gap-1 ${
-                    activeTab === tab
-                      ? "text-[var(--color-primary)]"
-                      : "text-slate-500 hover:text-slate-900"
-                  }`}
+                  className={`pb-4 relative font-bold text-sm transition-colors flex items-center gap-1 ${activeTab === tab
+                    ? "text-[var(--color-primary)]"
+                    : "text-slate-500 hover:text-slate-900"
+                    }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   {tab !== "overview" &&
@@ -319,11 +320,10 @@ const AnalysisView: React.FC = () => {
                                 <div className="flex justify-between items-start mb-2 pl-2">
                                   <span className="font-bold text-slate-900">{gap.name}</span>
                                   <span
-                                    className={`text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider ${
-                                      gap.importance === "Critical"
-                                        ? "bg-red-100 text-red-700 border border-red-200"
-                                        : "bg-amber-100 text-amber-700 border border-amber-200"
-                                    }`}
+                                    className={`text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider ${gap.importance === "Critical"
+                                      ? "bg-red-100 text-red-700 border border-red-200"
+                                      : "bg-amber-100 text-amber-700 border border-amber-200"
+                                      }`}
                                   >
                                     {gap.importance}
                                   </span>
@@ -338,28 +338,30 @@ const AnalysisView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* ✅ YÊU CẦU 1: Điều kiện Ẩn Nút Generate Roadmap nếu Roadmap đã được tạo (Có mảng steps) */}
+                    {/* Điều kiện Ẩn Nút Generate Roadmap nếu Roadmap đã được tạo (Có mảng steps) */}
                     {(!roadmap || !roadmap.steps || roadmap.steps.length === 0) && (
                       <div className="flex justify-center pt-6 pb-10">
-                        <Button
-                          className="!px-10 !py-4 shadow-xl hover:shadow-blue-500/30 flex items-center gap-2 font-bold text-lg"
-                          onClick={handleGenerateRoadmap}
-                          disabled={isGenerating}
-                        >
-                          {isGenerating ? (
-                            <>
-                              <span className="material-symbols-outlined animate-spin">
-                                progress_activity
+                        {isGenerating ? (
+                          <div className="w-full max-w-md bg-white p-5 rounded-2xl shadow-sm border border-[var(--color-primary)]/30 animate-in zoom-in-95">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-sm font-bold text-[var(--color-primary)] flex items-center gap-2">
+                                <span className="material-symbols-outlined animate-spin text-[18px]">precision_manufacturing</span>
+                                {loadingMessage || "Building your Roadmap..."}
                               </span>
-                              Generating...
-                            </>
-                          ) : (
-                            <>
-                              <span className="material-symbols-outlined">auto_awesome</span>
-                              Generate Roadmap
-                            </>
-                          )}
-                        </Button>
+                              <span className="text-sm font-black text-[var(--color-primary)]">{generateProgress}%</span>
+                            </div>
+                            <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                              <div
+                                className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-300 ease-out"
+                                style={{ width: `${generateProgress}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button className="!px-10 !py-4 shadow-xl hover:shadow-blue-500/30 flex items-center gap-2 font-bold text-lg" onClick={handleGenerateRoadmap}>
+                            <span className="material-symbols-outlined">auto_awesome</span> Generate Roadmap
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>

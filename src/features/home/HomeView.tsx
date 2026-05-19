@@ -23,6 +23,11 @@ const HomeView: React.FC = () => {
     validateFile,
     toggleSelectCv,
     isLoading,
+    loadingMessage,
+    analyzeProgress,
+    handleFakeUpload,
+    isUploadingCv,
+    isUploadingJd,
   } = useHomeView();
 
   const jdTextLength = watch("jdText")?.length || 0;
@@ -103,12 +108,18 @@ const HomeView: React.FC = () => {
                     type="file"
                     className="absolute inset-0 opacity-0 cursor-pointer"
                     accept=".pdf,.docx,.doc"
-                    {...cvRegisterRest} /* SỬA BƯỚC 2: Rải các thuộc tính ref, onBlur, name... */
+                    {...cvRegisterRest}
                     onChange={(e) => {
-                      cvOnChange(e); // react-hook-form nhận dữ liệu và kích hoạt watch()
+                      cvOnChange(e);
+                      if (e.target.files?.length) handleFakeUpload("cv");
                     }}
                   />
-                  {cvFile?.[0] && (
+                  {isUploadingCv ? (
+                    <div className="flex items-center gap-2 mt-4 text-sm text-[var(--color-primary)] font-medium">
+                      <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                      <span>Đang xử lý file...</span>
+                    </div>
+                  ) : cvFile?.[0] && (
                     <div className="flex items-center gap-2 mt-4 text-sm text-green-600 font-medium">
                       <span className="material-symbols-outlined text-base">check_circle</span>
                       <span>{cvFile[0].name}</span>
@@ -159,11 +170,10 @@ const HomeView: React.FC = () => {
                             e.stopPropagation();
                             toggleSelectCv(i);
                           }}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
-                            selectedCv === i
-                              ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/50"
-                              : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
-                          }`}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${selectedCv === i
+                            ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/50"
+                            : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
+                            }`}
                         >
                           {selectedCv === i && (
                             <span className="material-symbols-outlined text-[14px]">check</span>
@@ -247,12 +257,18 @@ const HomeView: React.FC = () => {
                   type="file"
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   accept=".pdf,.docx,.doc"
-                  {...jdRegisterRest} /* SỬA BƯỚC 3: Rải các thuộc tính cho JD Input */
+                  {...jdRegisterRest}
                   onChange={(e) => {
-                    jdOnChange(e); // react-hook-form nhận dữ liệu JD
+                    jdOnChange(e);
+                    if (e.target.files?.length) handleFakeUpload("jd");
                   }}
                 />
-                {jdFile?.[0] && (
+                {isUploadingJd ? (
+                  <div className="flex items-center gap-2 mt-4 text-sm text-indigo-600 font-medium">
+                    <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
+                    <span>Đang xử lý file...</span>
+                  </div>
+                ) : jdFile?.[0] && (
                   <div className="flex items-center gap-2 mt-4 text-sm text-green-600 font-medium">
                     <span className="material-symbols-outlined text-base">check_circle</span>
                     <span>{jdFile[0].name}</span>
@@ -267,12 +283,11 @@ const HomeView: React.FC = () => {
           </div>
         </div>
 
-        {/* ... PHẦN CÒN LẠI GIỮ NGUYÊN (Block 3, grid 3 cột, Modal) ... */}
 
         {/* --- BLOCK 3: SUBMIT ACTION --- */}
         <div className="xl:col-span-12 mt-4">
           <div className="bg-[var(--color-primary)]/5 rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center justify-between gap-8 border border-[var(--color-primary)]/10">
-            <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+            <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left flex-1">
               <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
                 3
               </div>
@@ -285,15 +300,31 @@ const HomeView: React.FC = () => {
                 </p>
               </div>
             </div>
-            <Button
-              variant="unstyled"
-              type="submit"
-              disabled={isLoading}
-              className={`whitespace-nowrap bg-[#0d99ff] text-white px-10 py-5 rounded-full font-bold text-lg shadow-xl 
-                ${isLoading ? "opacity-60 cursor-not-allowed" : "hover:scale-[1.02] active:scale-[0.98]"}`}
-            >
-              {isLoading ? "Processing..." : "Analyze & Generate"}
-            </Button>
+            {isLoading ? (
+              <div className="w-full md:w-80 bg-white p-5 rounded-2xl shadow-sm border border-[var(--color-primary)]/20 animate-in zoom-in-95">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm font-bold text-[var(--color-primary)] flex items-center gap-2">
+                    <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
+                    {loadingMessage || 'Processing...'}
+                  </span>
+                  <span className="text-sm font-black text-[var(--color-primary)]">{analyzeProgress}%</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${analyzeProgress}%` }}
+                  ></div>
+                </div>
+              </div>
+            ) : (
+              <Button
+                variant="unstyled"
+                type="submit"
+                className="whitespace-nowrap bg-[#0d99ff] text-white px-10 py-5 rounded-full font-bold text-lg shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Analyze & Generate
+              </Button>
+            )}
           </div>
         </div>
 

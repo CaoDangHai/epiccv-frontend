@@ -1,8 +1,9 @@
 import { apiClient } from "../utils/apiClient";
 import type { AnalysisResult, Roadmap } from "../features/analysis/types";
 
-export const processCV = async (formData: FormData): Promise<AnalysisResult> => {
-  const response = await apiClient.post<AnalysisResult>("/cv/process", formData, {
+// Trả về jobId thay vì data để chạy SSE
+export const processCVStart = async (formData: FormData): Promise<{ jobId: string }> => {
+  const response = await apiClient.post<{ jobId: string }>("/cv/process", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
@@ -18,15 +19,15 @@ export const getAnalysisById = async (id: string): Promise<AnalysisResult> => {
   return response.data;
 };
 
-// --- ROADMAP APIs ---
+// Trả về jobId thay vì data
+export const generateRoadmapStart = async (analysisId: string): Promise<{ jobId: string }> => {
+  const response = await apiClient.post<{ jobId: string }>(`/roadmap/generate/${analysisId}`);
+  return response.data;
+};
+
 export const getRoadmapFromDb = async (analysisId: string): Promise<Roadmap | null> => {
   const response = await apiClient.get(`/roadmap/${analysisId}`);
   return response.data || null;
-};
-
-export const generateRoadmapAI = async (analysisId: string): Promise<Roadmap> => {
-  const response = await apiClient.post<Roadmap>(`/roadmap/generate/${analysisId}`);
-  return response.data;
 };
 
 export const updateStepStatus = async (stepId: string, isCompleted: boolean) => {
