@@ -1,27 +1,22 @@
-// File: src/layouts/Topbar.tsx
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useTopbar } from "./useTopbar";
 import epiccvLogo from "../assets/epiccv-logo.png";
 import { Button } from "../components/ui/Button";
-import { mockNotifications } from "./mockData";
 
 const Topbar: React.FC = () => {
   const {
-    showNotifications,
     showProfileMenu,
     showLogoutConfirm,
     setShowLogoutConfirm,
     isMobileMenuOpen,
     headerRef,
-    toggleNotifications,
     toggleProfileMenu,
     toggleMobileMenu,
     handleLogout,
     handleNavigate,
+    userInfo,
   } = useTopbar();
-
-  const unreadCount = mockNotifications.filter((n) => n.unread).length;
 
   const getDesktopNavLinkClass = (isActive: boolean) => {
     return `flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm ${
@@ -41,7 +36,6 @@ const Topbar: React.FC = () => {
 
   return (
     <>
-      {/* Modal Xác nhận Đăng xuất (Giữ nguyên) */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm bg-black/40">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -64,11 +58,7 @@ const Topbar: React.FC = () => {
       )}
 
       <header ref={headerRef} className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        {/* Cấu trúc lại layout Desktop:
-          - Dùng 'justify-between' tổng thể cho 3 block: Left, Center, Right.
-        */}
         <div className="h-16 flex items-center justify-between px-4 md:px-8">
-          {/* 1. Block TRÁI: Logo (Đã tách khỏi Desktop Nav cũ) */}
           <div className="flex items-center flex-none">
             <div
               className="flex items-center gap-3 cursor-pointer"
@@ -81,8 +71,6 @@ const Topbar: React.FC = () => {
             </div>
           </div>
 
-          {/* 2. Block GIỮA: Desktop Navigation */}
-          {/* Thêm 'hidden md:flex flex-1 justify-center' để canh giữa */}
           <nav className="hidden md:flex items-center gap-2 flex-1 justify-center">
             <NavLink to="/home" className={({ isActive }) => getDesktopNavLinkClass(isActive)}>
               <span className="material-symbols-outlined text-[18px]">folder_open</span>
@@ -94,88 +82,23 @@ const Topbar: React.FC = () => {
             </NavLink>
           </nav>
 
-          {/* 3. Block PHẢI: Actions */}
-          {/* Thêm 'flex-none justify-end' để block này không chiếm chỗ của Center Nav */}
           <div className="flex items-center gap-2 md:gap-4 flex-none justify-end">
-            {/* ĐÃ XÓA: Nút New Analysis ở đây */}
-
-            {/* Notification Menu (Giữ nguyên) */}
-            <div className="relative">
-              <Button
-                variant="unstyled"
-                onClick={toggleNotifications}
-                className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-all relative"
-              >
-                <span className="material-symbols-outlined">notifications</span>
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                )}
-              </Button>
-
-              {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200">
-                  <div className="flex justify-between items-center px-4 py-3 bg-slate-50 border-b border-slate-100">
-                    <h3 className="font-bold text-slate-800">Notifications</h3>
-                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
-                      {unreadCount} New
-                    </span>
-                  </div>
-                  {/* ... code list thông báo cũ ... */}
-                  <div className="max-h-[300px] overflow-y-auto">
-                    {mockNotifications.length === 0 ? (
-                      <div className="p-8 text-center text-slate-500">
-                        <span className="material-symbols-outlined text-4xl mb-2 opacity-50">
-                          notifications_off
-                        </span>
-                        <p className="text-sm">You have no notifications.</p>
-                      </div>
-                    ) : (
-                      mockNotifications.map((n, index) => (
-                        <div
-                          key={n.id}
-                          className={`p-4 border-b border-slate-100 hover:bg-slate-50 transition ${index === mockNotifications.length - 1 ? "border-b-0" : ""} ${n.unread ? "bg-blue-50/50" : ""}`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div
-                              className={`h-8 w-8 rounded-full flex-none flex items-center justify-center mt-0.5 ${n.unread ? "bg-blue-100" : "bg-slate-100"}`}
-                            >
-                              <span
-                                className={`material-symbols-outlined text-[18px] ${n.unread ? "text-blue-600" : "text-slate-500"}`}
-                              >
-                                notifications
-                              </span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p
-                                className={`text-sm ${n.unread ? "font-semibold text-slate-900" : "text-slate-700"}`}
-                              >
-                                {n.title}
-                              </p>
-                              <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
-                                {n.description}
-                              </p>
-                              <p className="text-[10px] font-medium text-slate-400 mt-1">
-                                {n.time}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Profile Menu (Giữ nguyên) */}
             <div className="relative hidden md:block">
               <Button
                 variant="unstyled"
                 onClick={toggleProfileMenu}
                 className="flex items-center gap-2 group cursor-pointer"
               >
-                <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden border border-slate-300">
-                  <span className="material-symbols-outlined text-slate-500 text-sm">person</span>
+                <div className="h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden border border-slate-300">
+                  {userInfo?.avatarUrl ? (
+                    <img
+                      src={userInfo.avatarUrl}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="material-symbols-outlined text-slate-500 text-sm">person</span>
+                  )}
                 </div>
                 <span
                   className={`material-symbols-outlined text-[18px] text-slate-500 transition-transform ${showProfileMenu ? "rotate-180" : ""}`}
@@ -185,31 +108,24 @@ const Topbar: React.FC = () => {
               </Button>
 
               {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200">
-                  <div className="p-4 border-b border-slate-100">
-                    <p className="font-bold text-slate-900 text-sm">Việt Huỳnh</p>
-                    <p className="text-xs text-slate-500">viet@epiccv.com</p>
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200">
+                  <div className="p-4 border-b border-slate-100 bg-slate-50">
+                    <p className="font-bold text-slate-900 truncate">
+                      {userInfo?.fullName || "Tài Khoản EpicCV"}
+                    </p>
+                    <p className="text-xs text-slate-500 truncate mt-0.5">{userInfo?.email}</p>
                   </div>
                   <div className="py-2 border-b border-slate-100">
-                    <Button
-                      variant="unstyled"
-                      onClick={() => handleNavigate("/profile")}
-                      className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3"
-                    >
-                      <span className="material-symbols-outlined text-[18px] text-slate-400">
-                        person
-                      </span>
-                      Account
-                    </Button>
+                    {/* Đã xóa nút Profile, chỉ giữ lại Settings */}
                     <Button
                       variant="unstyled"
                       onClick={() => handleNavigate("/settings")}
                       className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3"
                     >
                       <span className="material-symbols-outlined text-[18px] text-slate-400">
-                        settings
+                        manage_accounts
                       </span>
-                      Settings
+                      Account & Settings
                     </Button>
                   </div>
                   <div className="py-2">
@@ -225,7 +141,6 @@ const Topbar: React.FC = () => {
               )}
             </div>
 
-            {/* Hamburger Button (Mobile Only) */}
             <Button
               variant="unstyled"
               onClick={toggleMobileMenu}
@@ -238,7 +153,6 @@ const Topbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Slide-down Menu */}
         {isMobileMenuOpen && (
           <nav className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-slate-200 shadow-lg animate-in slide-in-from-top-2 duration-200 flex flex-col">
             <div className="p-4 space-y-1">
@@ -261,20 +175,12 @@ const Topbar: React.FC = () => {
             <div className="p-4 border-t border-slate-100 flex flex-col gap-2">
               <Button
                 variant="unstyled"
-                onClick={() => handleNavigate("/profile")}
-                className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-3 font-medium"
-              >
-                <span className="material-symbols-outlined text-slate-400">person</span> My Profile
-              </Button>
-              <Button
-                variant="unstyled"
                 onClick={() => handleNavigate("/settings")}
                 className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-3 font-medium"
               >
-                <span className="material-symbols-outlined text-slate-400">settings</span> Settings
+                <span className="material-symbols-outlined text-slate-400">manage_accounts</span>{" "}
+                Account & Settings
               </Button>
-
-              {/* ĐÃ XÓA: Nút New Analysis (Mobile) ở đây */}
 
               <Button
                 variant="danger"

@@ -34,3 +34,16 @@ export const updateStepStatus = async (stepId: string, isCompleted: boolean) => 
   const response = await apiClient.patch(`/roadmap/step/${stepId}/status`, { isCompleted });
   return response.data;
 };
+
+export const getSavedCVs = async () => {
+  const response = await apiClient.get("/cv/saved");
+  return response.data;
+};
+export const deleteCV = async (id: string) => {
+  const response = await apiClient.delete(`/cv/saved/${id}`);
+  return response.data;
+};
+export const deleteAllHistory = async () => {
+  const response = await apiClient.delete("/cv/history");
+  return response.data;
+};

@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { processCVStart } from "../../api/cvApi"; 
+import { processCVStart, getSavedCVs, deleteCV } from "../../api/cvApi";
 
 import type { HomeFormValues, SavedCV, UseHomeViewReturn } from "./types";
 
@@ -18,25 +18,43 @@ export const useHomeView = (): UseHomeViewReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [analyzeProgress, setAnalyzeProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("");
-  
-  // State quản lý hiệu ứng vòng quay upload
+
   const [isUploadingCv, setIsUploadingCv] = useState(false);
   const [isUploadingJd, setIsUploadingJd] = useState(false);
-  
-  // Ref quản lý Interval của Hybrid Progress
+
   const progressIntervalRef = useRef<number | null>(null);
+  const [savedCVs, setSavedCVs] = useState<SavedCV[]>([]);
 
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<HomeFormValues>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm<HomeFormValues>();
 
-  const savedCVs: SavedCV[] = [
-    { name: "Frontend_Resume_Oct.pdf", meta: "Last used 2 days ago", color: "blue" },
-    { name: "Senior_Dev_CV_v2.pdf", meta: "Uploaded Jan 15", color: "slate" },
-    { name: "Product_Manager_2023.docx", meta: "Uploaded Dec 20, 2023", color: "slate" },
-  ];
+  useEffect(() => {
+    const fetchCVs = async () => {
+      try {
+        const cvs = await getSavedCVs();
+        setSavedCVs(cvs);
+      } catch {
+        console.error("Lỗi lấy danh sách CV");
+      }
+    };
+    fetchCVs();
+  }, []);
 
-  const toggleSelectCv = (index: number) => setSelectedCv((prev) => (prev === index ? null : index));
+  const toggleSelectCv = (index: number) =>
+    setSelectedCv((prev) => (prev === index ? null : index));
 
-  const validateFile = (fileList?: FileList, maxSizeMB = 5, allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]) => {
+  const validateFile = (
+    fileList?: FileList,
+    maxSizeMB = 5,
+    allowedTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ]
+  ) => {
     if (!fileList || fileList.length === 0) return true;
     const file = fileList[0];
     if (!allowedTypes.includes(file.type)) return "Chỉ chấp nhận file PDF hoặc DOCX";
@@ -44,7 +62,6 @@ export const useHomeView = (): UseHomeViewReturn => {
     return true;
   };
 
-  // Logic hiệu ứng tải file
   const handleFakeUpload = (type: "cv" | "jd") => {
     if (type === "cv") {
       setIsUploadingCv(true);
@@ -60,9 +77,18 @@ export const useHomeView = (): UseHomeViewReturn => {
     const jdFileFromForm = data.jdFile?.[0];
     const jdText = data.jdText;
 
-    if (!cvFileFromForm) { toast.error("Vui lòng tải lên file CV!"); return; }
-    if (opportunityTab === "paste" && !jdText) { toast.error("Vui lòng nhập nội dung JD!"); return; }
-    if (opportunityTab === "upload" && !jdFileFromForm) { toast.error("Vui lòng tải lên file JD!"); return; }
+    if (!cvFileFromForm) {
+      toast.error("Vui lòng tải lên file CV!");
+      return;
+    }
+    if (opportunityTab === "paste" && !jdText) {
+      toast.error("Vui lòng nhập nội dung JD!");
+      return;
+    }
+    if (opportunityTab === "upload" && !jdFileFromForm) {
+      toast.error("Vui lòng tải lên file JD!");
+      return;
+    }
 
     const toastId = toast.loading("Khởi tạo quá trình phân tích...");
     setIsLoading(true);
@@ -77,18 +103,14 @@ export const useHomeView = (): UseHomeViewReturn => {
 
       const { jobId } = await processCVStart(formData);
 
-      // KHỞI TẠO HYBRID PROGRESS
       let targetProgress = 0;
       let currentProgress = 0;
 
-      // Cứ mỗi 300ms nhích phần trăm một lần để tạo độ mượt
-      progressIntervalRef.current = setInterval(() => {
+      progressIntervalRef.current = window.setInterval(() => {
         if (currentProgress < targetProgress) {
-          // Bắt kịp Backend nhanh
           currentProgress += 2;
           setAnalyzeProgress(currentProgress > 100 ? 100 : currentProgress);
         } else if (currentProgress < targetProgress + 20 && currentProgress < 95) {
-          // Nhích ảo: Vượt lên trước Backend 1 chút nhưng không bao giờ quá xa
           currentProgress += 1;
           setAnalyzeProgress(currentProgress);
         }
@@ -102,10 +124,9 @@ export const useHomeView = (): UseHomeViewReturn => {
         if (payload.error) {
           toast.error(payload.error, { id: toastId });
           eventSource.close();
-          if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+          if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
           setIsLoading(false);
         } else {
-          // Chỉ cập nhật mục tiêu, kệ cho interval tự xử lý UI chạy tới đó
           targetProgress = payload.progress;
           setLoadingMessage(payload.message);
 
@@ -114,7 +135,7 @@ export const useHomeView = (): UseHomeViewReturn => {
             setAnalyzeProgress(100);
             toast.success("Phân tích hoàn tất!", { id: toastId });
             eventSource.close();
-            if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+            if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
             setTimeout(() => {
               navigate("/analysis", { state: { targetReportId: payload.resultId } });
             }, 800);
@@ -125,19 +146,66 @@ export const useHomeView = (): UseHomeViewReturn => {
       eventSource.onerror = () => {
         toast.error("Mất kết nối với máy chủ", { id: toastId });
         eventSource.close();
-        if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+        if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
         setIsLoading(false);
       };
-
-    } catch (error) {
+    } catch {
       toast.error("Không thể bắt đầu phân tích", { id: toastId });
       setIsLoading(false);
     }
   };
 
-  const handleDeleteCvClick = (e: React.MouseEvent, index: number) => { e.stopPropagation(); setCvToDelete(index); setIsDeleteModalOpen(true); };
-  const confirmDelete = () => { toast.success("Đã xóa CV khỏi hệ thống"); setIsDeleteModalOpen(false); if (selectedCv === cvToDelete) setSelectedCv(null); setCvToDelete(null); };
-  const cancelDelete = () => { setIsDeleteModalOpen(false); setCvToDelete(null); };
+  const handleDeleteCvClick = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    setCvToDelete(index);
+    setIsDeleteModalOpen(true);
+  };
 
-  return { register, errors, handleSubmit, watch, credentialsTab, setCredentialsTab, opportunityTab, setOpportunityTab, selectedCv: selectedCv ?? -1, setSelectedCv, savedCVs, toggleSelectCv, validateFile, onAnalyze, isDeleteModalOpen, setIsDeleteModalOpen, handleDeleteCvClick, confirmDelete, cancelDelete, isLoading, analyzeProgress, loadingMessage, isUploadingCv, isUploadingJd, handleFakeUpload };
+  const confirmDelete = async () => {
+    if (cvToDelete === null) return;
+    const cvId = savedCVs[cvToDelete].id;
+    try {
+      if (cvId) await deleteCV(cvId);
+      setSavedCVs((prev) => prev.filter((_, i) => i !== cvToDelete));
+      toast.success("Đã xóa CV khỏi hệ thống");
+    } catch {
+      toast.error("Không thể xóa CV này");
+    }
+    setIsDeleteModalOpen(false);
+    if (selectedCv === cvToDelete) setSelectedCv(null);
+    setCvToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setCvToDelete(null);
+  };
+
+  return {
+    register,
+    errors,
+    handleSubmit,
+    watch,
+    credentialsTab,
+    setCredentialsTab,
+    opportunityTab,
+    setOpportunityTab,
+    selectedCv: selectedCv ?? -1,
+    setSelectedCv,
+    savedCVs,
+    toggleSelectCv,
+    validateFile,
+    onAnalyze,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    handleDeleteCvClick,
+    confirmDelete,
+    cancelDelete,
+    isLoading,
+    analyzeProgress,
+    loadingMessage,
+    isUploadingCv,
+    isUploadingJd,
+    handleFakeUpload,
+  };
 };

@@ -5,10 +5,9 @@ import { Toaster } from "react-hot-toast";
 import { SignIn } from "../features/auth/components/SignIn";
 import { SignUp } from "../features/auth/components/SignUp";
 import MainLayout from "../layouts/MainLayout";
-import { HomeView } from "../features/home"; // Import Feature Home
+import { HomeView } from "../features/home";
 import { AnalysisView } from "../features/analysis";
 import { SettingsView } from "../features/settings";
-import { ProfileView } from "../features/profile";
 import { MezonCallback } from "../features/auth/components/MezonCallback";
 
 const AppRoutes: React.FC = () => (
@@ -25,11 +24,9 @@ const AppRoutes: React.FC = () => (
       {/* Routes Cần Layout (Đã Login) */}
       <Route element={<MainLayout />}>
         <Route path="/home" element={<HomeView />} />
-        {}
         <Route path="/analysis" element={<AnalysisView />} />
         <Route path="/analysis/:id" element={<AnalysisView />} />
         <Route path="/settings" element={<SettingsView />} />
-        <Route path="/profile" element={<ProfileView />} />
       </Route>
     </Routes>
   </BrowserRouter>
