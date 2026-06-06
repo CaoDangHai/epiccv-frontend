@@ -22,7 +22,6 @@ const SignUp: React.FC = () => {
 
   return (
     <div className="bg-slate-50 font-sans text-slate-900 min-h-screen flex flex-col md:flex-row overflow-x-hidden selection:bg-blue-200 selection:text-blue-900">
-      {/* --- Cột trái: Artwork & Branding (Giữ nguyên) --- */}
       <section className="hidden md:flex relative w-1/2 min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-500 p-16 flex-col justify-between overflow-hidden">
         <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-white opacity-10 rounded-full blur-[100px]"></div>
         <div className="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-indigo-900 opacity-30 rounded-full blur-[80px]"></div>
@@ -82,7 +81,6 @@ const SignUp: React.FC = () => {
         </div>
       </section>
 
-      {/* --- Cột phải: Vùng Form Đăng Ký --- */}
       <main className="w-full md:w-1/2 flex flex-col justify-center bg-white px-8 py-12 md:px-24 md:py-24 relative">
         <div className="md:hidden flex items-center gap-2 mb-12">
           <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
@@ -117,7 +115,7 @@ const SignUp: React.FC = () => {
                   type="text"
                   className={`w-full pl-12 pr-4 py-4 bg-slate-50 border ${errors.fullName ? "border-red-400 focus:ring-red-200" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"} rounded-xl focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 text-slate-900`}
                   placeholder="John Doe"
-                  {...register("fullName", { required: "Trường này là bắt buộc" })}
+                  {...register("fullName", { required: "Full name is required" })}
                 />
               </div>
               {errors.fullName && (
@@ -140,10 +138,10 @@ const SignUp: React.FC = () => {
                   className={`w-full pl-12 pr-4 py-4 bg-slate-50 border ${errors.email ? "border-red-400 focus:ring-red-200" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"} rounded-xl focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 text-slate-900`}
                   placeholder="name@company.com"
                   {...register("email", {
-                    required: "Trường này là bắt buộc",
+                    required: "Email is required",
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Định dạng email không hợp lệ",
+                      message: "Invalid email format",
                     },
                   })}
                 />
@@ -166,8 +164,8 @@ const SignUp: React.FC = () => {
                   className={`w-full pl-12 py-4 bg-slate-50 border ${errors.password ? "border-red-400 focus:ring-red-200" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"} rounded-xl focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 text-slate-900`}
                   placeholder="••••••••"
                   {...register("password", {
-                    required: "Trường này là bắt buộc",
-                    minLength: { value: 6, message: "Tối thiểu 6 ký tự" },
+                    required: "Password is required",
+                    minLength: { value: 6, message: "Use at least 6 characters" },
                   })}
                 />
               </div>
@@ -191,9 +189,9 @@ const SignUp: React.FC = () => {
                   className={`w-full pl-12 py-4 bg-slate-50 border ${errors.confirmPassword ? "border-red-400 focus:ring-red-200" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"} rounded-xl focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 text-slate-900`}
                   placeholder="••••••••"
                   {...register("confirmPassword", {
-                    required: "Trường này là bắt buộc",
+                    required: "Please confirm your password",
                     validate: (value) =>
-                      value === currentPassword || "Mật khẩu xác nhận không trùng khớp",
+                      value === currentPassword || "Password confirmation does not match",
                   })}
                 />
               </div>
@@ -219,7 +217,6 @@ const SignUp: React.FC = () => {
               </label>
             </div>
 
-            {/* Tích hợp Cloudflare Turnstile */}
             <div className="flex justify-center py-2">
               <Turnstile
                 siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ""}
@@ -272,7 +269,7 @@ const SignUp: React.FC = () => {
 
             <div className="flex flex-wrap justify-center items-center gap-6 w-full">
               <span className="text-[11px] font-semibold tracking-widest uppercase text-slate-400 w-full block mb-4">
-                © 2026 EpicCV. All rights reserved.
+                Copyright 2026 EpicCV. All rights reserved.
               </span>
               <div className="flex gap-6">
                 <a

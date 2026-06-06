@@ -26,7 +26,6 @@ export const useSignIn = () => {
   });
 
   const onSubmit = async (data: Record<string, string | boolean>) => {
-    // Xóa 'any'
     setIsLoading(true);
     try {
       const response = await apiClient.post("/auth/login", {
@@ -39,12 +38,11 @@ export const useSignIn = () => {
         localStorage.setItem("user_info", JSON.stringify(response.data.user));
       }
 
-      toast.success("Đăng nhập thành công!");
+      toast.success("Signed in successfully");
       navigate("/home");
     } catch (error: unknown) {
-      // Xóa 'any'
       const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || "Sai email hoặc mật khẩu");
+      toast.error(err.response?.data?.message || "Invalid email or password");
     } finally {
       setIsLoading(false);
     }
@@ -55,8 +53,6 @@ export const useSignIn = () => {
     const redirectUri = import.meta.env.VITE_MEZON_REDIRECT_URI || "";
     const state = generateMezonState(11);
 
-    
-
     localStorage.setItem("mezon_oauth_state", state);
 
     const params = new URLSearchParams({
@@ -64,7 +60,7 @@ export const useSignIn = () => {
       redirect_uri: redirectUri,
       response_type: "code",
       scope: "openid offline",
-      state: state,
+      state,
     });
 
     window.location.href = `https://oauth2.mezon.ai/oauth2/auth?${params.toString()}`;

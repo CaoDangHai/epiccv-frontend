@@ -24,7 +24,7 @@ const AnalysisView: React.FC = () => {
     handleCloseDrawer,
     handleToggleStepStatus,
     loadingMessage,
-    generateProgress
+    generateProgress,
   } = useAnalysis();
 
   return (
@@ -162,15 +162,16 @@ const AnalysisView: React.FC = () => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-4 relative font-bold text-sm transition-colors flex items-center gap-1 ${activeTab === tab
-                    ? "text-[var(--color-primary)]"
-                    : "text-slate-500 hover:text-slate-900"
-                    }`}
+                  className={`pb-4 relative font-bold text-sm transition-colors flex items-center gap-1 ${
+                    activeTab === tab
+                      ? "text-[var(--color-primary)]"
+                      : "text-slate-500 hover:text-slate-900"
+                  }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   {tab !== "overview" &&
                     (!roadmap || !roadmap.steps || roadmap.steps.length === 0) && (
-                      <span className="text-[10px]">🔒</span>
+                      <span className="material-symbols-outlined text-[14px]">lock</span>
                     )}
                   {activeTab === tab && (
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--color-primary)] rounded-t-full shadow-[0_-2px_8px_rgba(37,99,235,0.3)]"></div>
@@ -186,7 +187,6 @@ const AnalysisView: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* TAB OVERVIEW */}
               {activeTab === "overview" && analysisData && (
                 <div className="flex-1 overflow-y-auto pr-2 pb-8 animate-in fade-in duration-300">
                   <div className="space-y-8">
@@ -320,10 +320,11 @@ const AnalysisView: React.FC = () => {
                                 <div className="flex justify-between items-start mb-2 pl-2">
                                   <span className="font-bold text-slate-900">{gap.name}</span>
                                   <span
-                                    className={`text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider ${gap.importance === "Critical"
-                                      ? "bg-red-100 text-red-700 border border-red-200"
-                                      : "bg-amber-100 text-amber-700 border border-amber-200"
-                                      }`}
+                                    className={`text-[10px] px-2 py-1 rounded-md font-black uppercase tracking-wider ${
+                                      gap.importance === "Critical"
+                                        ? "bg-red-100 text-red-700 border border-red-200"
+                                        : "bg-amber-100 text-amber-700 border border-amber-200"
+                                    }`}
                                   >
                                     {gap.importance}
                                   </span>
@@ -338,17 +339,20 @@ const AnalysisView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Điều kiện Ẩn Nút Generate Roadmap nếu Roadmap đã được tạo (Có mảng steps) */}
                     {(!roadmap || !roadmap.steps || roadmap.steps.length === 0) && (
                       <div className="flex justify-center pt-6 pb-10">
                         {isGenerating ? (
                           <div className="w-full max-w-md bg-white p-5 rounded-2xl shadow-sm border border-[var(--color-primary)]/30 animate-in zoom-in-95">
                             <div className="flex justify-between items-center mb-3">
                               <span className="text-sm font-bold text-[var(--color-primary)] flex items-center gap-2">
-                                <span className="material-symbols-outlined animate-spin text-[18px]">precision_manufacturing</span>
+                                <span className="material-symbols-outlined animate-spin text-[18px]">
+                                  precision_manufacturing
+                                </span>
                                 {loadingMessage || "Building your Roadmap..."}
                               </span>
-                              <span className="text-sm font-black text-[var(--color-primary)]">{generateProgress}%</span>
+                              <span className="text-sm font-black text-[var(--color-primary)]">
+                                {generateProgress}%
+                              </span>
                             </div>
                             <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
                               <div
@@ -358,8 +362,12 @@ const AnalysisView: React.FC = () => {
                             </div>
                           </div>
                         ) : (
-                          <Button className="!px-10 !py-4 shadow-xl hover:shadow-blue-500/30 flex items-center gap-2 font-bold text-lg" onClick={handleGenerateRoadmap}>
-                            <span className="material-symbols-outlined">auto_awesome</span> Generate Roadmap
+                          <Button
+                            className="!px-10 !py-4 shadow-xl hover:shadow-blue-500/30 flex items-center gap-2 font-bold text-lg"
+                            onClick={handleGenerateRoadmap}
+                          >
+                            <span className="material-symbols-outlined">auto_awesome</span> Generate
+                            Roadmap
                           </Button>
                         )}
                       </div>
@@ -368,7 +376,6 @@ const AnalysisView: React.FC = () => {
                 </div>
               )}
 
-              {/* TAB PHASES */}
               {activeTab === "phases" && roadmap && (
                 <div className="flex-1 overflow-y-auto pr-2 pb-8 animate-in fade-in duration-300">
                   <RoadmapView
@@ -382,7 +389,6 @@ const AnalysisView: React.FC = () => {
                 </div>
               )}
 
-              {/* ✅ YÊU CẦU 3: TAB DOCUMENTATION GOM THEO PHASE TUYỆT ĐẸP */}
               {activeTab === "documentation" && roadmap && roadmap.steps?.length > 0 && (
                 <div className="flex-1 overflow-y-auto pr-2 pb-8 animate-in fade-in duration-300">
                   <h2 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-2">
@@ -397,7 +403,6 @@ const AnalysisView: React.FC = () => {
                           key={sIdx}
                           className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden"
                         >
-                          {/* Dòng line trang trí bên trái */}
                           <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
 
                           <h3 className="text-lg font-bold text-slate-800 mb-5 flex items-center gap-3 border-b border-slate-100 pb-4">
@@ -440,7 +445,6 @@ const AnalysisView: React.FC = () => {
                 </div>
               )}
 
-              {/* TAB STATUS VÀ TÍNH TOÁN % TỐI ƯU */}
               {activeTab === "status" && roadmap && roadmap.steps?.length > 0 && (
                 <div className="flex-1 overflow-y-auto pr-2 pb-8 animate-in fade-in duration-300">
                   <h2 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">

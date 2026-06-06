@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import type { Toast } from "react-hot-toast";
+import Switch from "react-switch";
 import { useSettings } from "./useSettings";
 import type { SettingsTab } from "./useSettings";
-import Switch from "react-switch";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { deleteAllHistory } from "../../api/cvApi";
@@ -24,17 +24,17 @@ const DeleteConfirmToast: React.FC<ToastProps> = ({ t, onConfirm }) => {
           <span className="material-symbols-outlined text-red-600">warning</span>
         </div>
         <div>
-          <h3 className="font-bold text-slate-900">Xóa dữ liệu?</h3>
-          <p className="text-xs text-slate-500">Hành động này không thể hoàn tác.</p>
+          <h3 className="font-bold text-slate-900">Delete data?</h3>
+          <p className="text-xs text-slate-500">This action cannot be undone.</p>
         </div>
       </div>
       <p className="text-sm text-slate-700 mb-3">
-        Vui lòng gõ <strong>XOA-DU-LIEU</strong> để xác nhận:
+        Type <strong>DELETE-DATA</strong> to confirm:
       </p>
       <Input
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="XOA-DU-LIEU"
+        placeholder="DELETE-DATA"
         className="mb-4 text-center font-bold tracking-widest text-red-600 uppercase"
       />
       <div className="flex gap-2">
@@ -43,15 +43,15 @@ const DeleteConfirmToast: React.FC<ToastProps> = ({ t, onConfirm }) => {
           onClick={() => toast.dismiss(t.id)}
           className="flex-1 !py-2 text-sm"
         >
-          Hủy
+          Cancel
         </Button>
         <Button
           variant="danger"
           onClick={onConfirm}
-          disabled={text !== "XOA-DU-LIEU"}
+          disabled={text !== "DELETE-DATA"}
           className="flex-1 !py-2 text-sm disabled:opacity-50"
         >
-          Xóa
+          Delete
         </Button>
       </div>
     </div>
@@ -87,12 +87,12 @@ const SettingsView: React.FC = () => {
           t={t}
           onConfirm={async () => {
             toast.dismiss(t.id);
-            const loadingId = toast.loading("Đang dọn dẹp hệ thống dữ liệu...");
+            const loadingId = toast.loading("Cleaning analysis data...");
             try {
               await deleteAllHistory();
-              toast.success("Đã xóa vĩnh viễn lịch sử phân tích!", { id: loadingId });
+              toast.success("Analysis history deleted permanently.", { id: loadingId });
             } catch {
-              toast.error("Xảy ra lỗi trong quá trình xóa dữ liệu", { id: loadingId });
+              toast.error("Unable to delete analysis data", { id: loadingId });
             }
           }}
         />
@@ -123,42 +123,45 @@ const SettingsView: React.FC = () => {
           >
             <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">
               arrow_back
-            </span>{" "}
+            </span>
             Back
           </Button>
         </div>
+
         <div className="space-y-1">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900">Account & Settings</h1>
           <p className="text-slate-500 text-sm">
-            Cấu hình thông tin tài khoản cá nhân và các thiết lập hệ thống.
+            Manage your account information, privacy preferences, and system settings.
           </p>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           <aside className="md:col-span-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
             <button onClick={() => setActiveTab("profile")} className={getTabClass("profile")}>
-              <span className="material-symbols-outlined text-[20px]">account_circle</span> Thông
-              tin cá nhân
+              <span className="material-symbols-outlined text-[20px]">account_circle</span>
+              Personal Information
             </button>
             <button onClick={() => setActiveTab("privacy")} className={getTabClass("privacy")}>
-              <span className="material-symbols-outlined text-[20px]">security</span> Quyền riêng tư
+              <span className="material-symbols-outlined text-[20px]">security</span>
+              Privacy
             </button>
             <button onClick={() => setActiveTab("terms")} className={getTabClass("terms")}>
-              <span className="material-symbols-outlined text-[20px]">gavel</span> Điều khoản dịch
-              vụ
+              <span className="material-symbols-outlined text-[20px]">gavel</span>
+              Terms of Service
             </button>
             <button
               onClick={() => setActiveTab("danger")}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all w-full text-left font-medium ${activeTab === "danger" ? "bg-red-50 text-red-600 font-bold" : "text-slate-600 hover:bg-red-50 hover:text-red-600"}`}
             >
-              <span className="material-symbols-outlined text-[20px]">delete_forever</span> Danger
-              Zone
+              <span className="material-symbols-outlined text-[20px]">delete_forever</span>
+              Danger Zone
             </button>
           </aside>
 
           <div className="md:col-span-8">
             {isLoading ? (
               <div className="text-center text-slate-400 py-12 font-medium animate-pulse">
-                Đang tải thông tin...
+                Loading account information...
               </div>
             ) : (
               <div className="space-y-6">
@@ -188,7 +191,7 @@ const SettingsView: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-xl font-bold text-slate-900">Cập nhật hồ sơ</h3>
+                          <h3 className="text-xl font-bold text-slate-900">Update Profile</h3>
                           <p className="text-sm text-slate-500 mt-1">{personalInfo.email}</p>
                         </div>
                       </div>
@@ -197,44 +200,44 @@ const SettingsView: React.FC = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                              Họ và tên
+                              Full Name
                             </label>
                             <Input
                               value={personalInfo.name}
                               onChange={(e) =>
                                 setPersonalInfo({ ...personalInfo, name: e.target.value })
                               }
-                              placeholder="Họ và tên"
+                              placeholder="Full name"
                             />
                           </div>
                           <div>
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                              Số điện thoại
+                              Phone
                             </label>
                             <Input
                               value={personalInfo.phone}
                               onChange={(e) =>
                                 setPersonalInfo({ ...personalInfo, phone: e.target.value })
                               }
-                              placeholder="SĐT liên lạc"
+                              placeholder="Contact phone"
                             />
                           </div>
                         </div>
                         <div>
                           <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                            Địa chỉ
+                            Location
                           </label>
                           <Input
                             value={personalInfo.location}
                             onChange={(e) =>
                               setPersonalInfo({ ...personalInfo, location: e.target.value })
                             }
-                            placeholder="Ví dụ: TP. Hồ Chí Minh"
+                            placeholder="Example: Ho Chi Minh City"
                           />
                         </div>
                         <div className="pt-2 flex justify-end">
                           <Button onClick={handleSaveProfile} disabled={isSaving}>
-                            {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
+                            {isSaving ? "Saving..." : "Save Changes"}
                           </Button>
                         </div>
                       </div>
@@ -243,14 +246,14 @@ const SettingsView: React.FC = () => {
                     {personalInfo.provider === "local" && (
                       <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                         <div className="mb-4">
-                          <h3 className="text-lg font-bold text-slate-900">Đổi mật khẩu</h3>
+                          <h3 className="text-lg font-bold text-slate-900">Change Password</h3>
                           <p className="text-xs text-slate-500 mt-1">
-                            Đảm bảo tài khoản của bạn đang sử dụng mật khẩu mạnh.
+                            Keep your account protected with a strong password.
                           </p>
                         </div>
                         <div>
                           <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                            Mật khẩu hiện tại
+                            Current Password
                           </label>
                           <Input
                             type="password"
@@ -263,7 +266,7 @@ const SettingsView: React.FC = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                              Mật khẩu mới
+                              New Password
                             </label>
                             <Input
                               type="password"
@@ -275,7 +278,7 @@ const SettingsView: React.FC = () => {
                           </div>
                           <div>
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                              Xác nhận mật khẩu mới
+                              Confirm New Password
                             </label>
                             <Input
                               type="password"
@@ -294,7 +297,7 @@ const SettingsView: React.FC = () => {
                               isChangingPass || !passwords.oldPassword || !passwords.newPassword
                             }
                           >
-                            {isChangingPass ? "Đang xử lý..." : "Cập nhật mật khẩu"}
+                            {isChangingPass ? "Processing..." : "Update Password"}
                           </Button>
                         </div>
                       </section>
@@ -310,15 +313,15 @@ const SettingsView: React.FC = () => {
                           psychology
                         </span>
                       </div>
-                      <h2 className="text-xl font-bold text-slate-900">Cải thiện AI</h2>
+                      <h2 className="text-xl font-bold text-slate-900">AI Improvement</h2>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
                       <div className="max-w-[80%]">
                         <p className="font-semibold text-slate-900 text-sm">
-                          Chia sẻ dữ liệu huấn luyện mẫu
+                          Share anonymized training samples
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                          Cho phép EpicCV sử dụng dữ liệu ẩn danh để tối ưu hóa mô hình LLM.
+                          Allow EpicCV to use anonymized data to improve model quality.
                         </p>
                       </div>
                       <Switch
@@ -338,27 +341,24 @@ const SettingsView: React.FC = () => {
                       <div className="p-2 bg-slate-100 rounded-lg">
                         <span className="material-symbols-outlined text-slate-700">gavel</span>
                       </div>
-                      <h2 className="text-xl font-bold text-slate-900">Điều khoản & Dịch vụ</h2>
+                      <h2 className="text-xl font-bold text-slate-900">Terms of Service</h2>
                     </div>
                     <div className="prose prose-sm text-slate-600 max-h-96 overflow-y-auto pr-4 space-y-4">
                       <p>
-                        <strong>1. Chấp nhận điều khoản:</strong> Bằng việc sử dụng EpicCV, bạn đồng
-                        ý với các điều khoản thu thập thông tin nghề nghiệp cơ bản nhằm phục vụ phân
-                        tích năng lực.
+                        <strong>1. Acceptance:</strong> By using EpicCV, you agree that the service
+                        may process career-related information to provide analysis and guidance.
                       </p>
                       <p>
-                        <strong>2. Bảo mật dữ liệu:</strong> Toàn bộ file CV tải lên (PDF, DOCX) sẽ
-                        được hệ thống mã hóa và chỉ cấp quyền truy cập cho chính chủ tài khoản.
-                        EpicCV cam kết không bán dữ liệu cá nhân cho bên thứ ba.
+                        <strong>2. Data Protection:</strong> Uploaded CV files are used only for
+                        your account workflows. EpicCV does not sell personal data to third parties.
                       </p>
                       <p>
-                        <strong>3. Miễn trừ trách nhiệm:</strong> Các lộ trình (Roadmap) do AI sinh
-                        ra mang tính chất tham khảo. EpicCV không đảm bảo 100% người dùng sẽ trúng
-                        tuyển sau khi hoàn thành lộ trình học tập.
+                        <strong>3. Disclaimer:</strong> AI-generated analysis and roadmaps are
+                        guidance only. EpicCV cannot guarantee hiring outcomes.
                       </p>
                       <p>
-                        <strong>4. Quyền xóa dữ liệu:</strong> Bạn có toàn quyền yêu cầu hủy bỏ vĩnh
-                        viễn tài khoản và các hồ sơ đã tải lên thông qua công cụ "Danger Zone".
+                        <strong>4. Deletion Rights:</strong> You can remove analysis history and
+                        roadmap data from the Danger Zone.
                       </p>
                     </div>
                   </section>
@@ -370,13 +370,13 @@ const SettingsView: React.FC = () => {
                       <div className="p-2 bg-red-50 rounded-lg">
                         <span className="material-symbols-outlined text-red-600">error</span>
                       </div>
-                      <h2 className="text-xl font-bold text-red-600">Khu vực nguy hiểm</h2>
+                      <h2 className="text-xl font-bold text-red-600">Danger Zone</h2>
                     </div>
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 p-4 bg-red-50/50 rounded-xl border border-red-100">
                       <div className="flex-1">
-                        <p className="font-bold text-slate-900 text-sm">Xóa lịch sử phân tích</p>
+                        <p className="font-bold text-slate-900 text-sm">Delete analysis history</p>
                         <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                          Hủy vĩnh viễn toàn bộ các báo cáo phân tích CV và dữ liệu Roadmap.
+                          Permanently delete all CV analysis reports and roadmap data.
                         </p>
                       </div>
                       <Button
@@ -384,7 +384,7 @@ const SettingsView: React.FC = () => {
                         onClick={triggerDangerZone}
                         className="w-full md:w-auto px-6 py-2.5 whitespace-nowrap text-sm"
                       >
-                        Xóa dữ liệu
+                        Delete Data
                       </Button>
                     </div>
                   </section>

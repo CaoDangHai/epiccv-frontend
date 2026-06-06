@@ -2,6 +2,7 @@ import React from "react";
 import { useHomeView } from "./useHomeView";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
+import type { SavedCV } from "./types";
 
 const HomeView: React.FC = () => {
   const {
@@ -34,7 +35,6 @@ const HomeView: React.FC = () => {
   const cvFile = watch("cvFile");
   const jdFile = watch("jdFile");
 
-  // SỬA BƯỚC 1: Tách hàm onChange mặc định của react-hook-form ra khỏi thuộc tính register
   const { onChange: cvOnChange, ...cvRegisterRest } = register("cvFile", {
     validate: (value) => validateFile(value),
   });
@@ -44,7 +44,6 @@ const HomeView: React.FC = () => {
 
   return (
     <div className="p-8 lg:p-12 relative">
-      {/* ... Phần header giữ nguyên ... */}
       <header className="mb-12">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-tight">
           Design your <span className="text-[var(--color-primary)] italic">dream</span> career path.
@@ -59,10 +58,8 @@ const HomeView: React.FC = () => {
         onSubmit={handleSubmit(onAnalyze)}
         className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch"
       >
-        {/* --- BLOCK 1: YOUR CV --- */}
         <div className="xl:col-span-5 group">
           <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-500 h-full flex flex-col">
-            {/* ... Tiêu đề giữ nguyên ... */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
@@ -116,17 +113,21 @@ const HomeView: React.FC = () => {
                   />
                   {isUploadingCv ? (
                     <div className="flex items-center gap-2 mt-4 text-sm text-[var(--color-primary)] font-medium">
-                      <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
-                      <span>Đang xử lý file...</span>
-                    </div>
-                  ) : cvFile?.[0] && (
-                    <div className="flex items-center gap-2 mt-4 text-sm text-green-600 font-medium">
-                      <span className="material-symbols-outlined text-base">check_circle</span>
-                      <span>{cvFile[0].name}</span>
-                      <span className="text-gray-400">
-                        ({(cvFile[0].size / 1024).toFixed(0)} KB)
+                      <span className="material-symbols-outlined animate-spin text-base">
+                        progress_activity
                       </span>
+                      <span>Processing file...</span>
                     </div>
+                  ) : (
+                    cvFile?.[0] && (
+                      <div className="flex items-center gap-2 mt-4 text-sm text-green-600 font-medium">
+                        <span className="material-symbols-outlined text-base">check_circle</span>
+                        <span>{cvFile[0].name}</span>
+                        <span className="text-gray-400">
+                          ({(cvFile[0].size / 1024).toFixed(0)} KB)
+                        </span>
+                      </div>
+                    )
                   )}
                 </label>
                 {errors.cvFile && (
@@ -136,13 +137,11 @@ const HomeView: React.FC = () => {
             )}
 
             {credentialsTab === "saved" && (
-              /* ... Tab saved giữ nguyên ... */
               <div className="flex-1 overflow-hidden">
                 <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {savedCVs.map((cv: any, i: number) => (
+                  {savedCVs.map((cv: SavedCV, i: number) => (
                     <div
-                      key={i}
+                      key={cv.id}
                       onClick={() => toggleSelectCv(i)}
                       className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer ${selectedCv === i ? "border-[var(--color-primary)] bg-blue-50/50 shadow-sm" : "border-slate-200 hover:border-blue-300 bg-slate-50"}`}
                     >
@@ -170,10 +169,11 @@ const HomeView: React.FC = () => {
                             e.stopPropagation();
                             toggleSelectCv(i);
                           }}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${selectedCv === i
-                            ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/50"
-                            : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
-                            }`}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                            selectedCv === i
+                              ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/50"
+                              : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
+                          }`}
                         >
                           {selectedCv === i && (
                             <span className="material-symbols-outlined text-[14px]">check</span>
@@ -192,13 +192,18 @@ const HomeView: React.FC = () => {
                       </div>
                     </div>
                   ))}
+
+                  {savedCVs.length === 0 && (
+                    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm font-medium text-slate-500">
+                      No saved CVs yet.
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* --- BLOCK 2: JOB DESCRIPTION --- */}
         <div className="xl:col-span-7 group">
           <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-500 h-full flex flex-col">
             <div className="flex items-center justify-between mb-6">
@@ -265,15 +270,21 @@ const HomeView: React.FC = () => {
                 />
                 {isUploadingJd ? (
                   <div className="flex items-center gap-2 mt-4 text-sm text-indigo-600 font-medium">
-                    <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
-                    <span>Đang xử lý file...</span>
+                    <span className="material-symbols-outlined animate-spin text-base">
+                      progress_activity
+                    </span>
+                    <span>Processing file...</span>
                   </div>
-                ) : jdFile?.[0] && (
-                  <div className="flex items-center gap-2 mt-4 text-sm text-green-600 font-medium">
-                    <span className="material-symbols-outlined text-base">check_circle</span>
-                    <span>{jdFile[0].name}</span>
-                    <span className="text-gray-400">({(jdFile[0].size / 1024).toFixed(0)} KB)</span>
-                  </div>
+                ) : (
+                  jdFile?.[0] && (
+                    <div className="flex items-center gap-2 mt-4 text-sm text-green-600 font-medium">
+                      <span className="material-symbols-outlined text-base">check_circle</span>
+                      <span>{jdFile[0].name}</span>
+                      <span className="text-gray-400">
+                        ({(jdFile[0].size / 1024).toFixed(0)} KB)
+                      </span>
+                    </div>
+                  )
                 )}
               </label>
             )}
@@ -283,8 +294,6 @@ const HomeView: React.FC = () => {
           </div>
         </div>
 
-
-        {/* --- BLOCK 3: SUBMIT ACTION --- */}
         <div className="xl:col-span-12 mt-4">
           <div className="bg-[var(--color-primary)]/5 rounded-[2.5rem] p-10 flex flex-col md:flex-row items-center justify-between gap-8 border border-[var(--color-primary)]/10">
             <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left flex-1">
@@ -305,9 +314,11 @@ const HomeView: React.FC = () => {
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-sm font-bold text-[var(--color-primary)] flex items-center gap-2">
                     <span className="material-symbols-outlined animate-spin text-[18px]">sync</span>
-                    {loadingMessage || 'Processing...'}
+                    {loadingMessage || "Processing..."}
                   </span>
-                  <span className="text-sm font-black text-[var(--color-primary)]">{analyzeProgress}%</span>
+                  <span className="text-sm font-black text-[var(--color-primary)]">
+                    {analyzeProgress}%
+                  </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
                   <div
@@ -328,7 +339,6 @@ const HomeView: React.FC = () => {
           </div>
         </div>
 
-        {/* Feature Grid */}
         <div className="xl:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
           <div className="p-8 rounded-3xl bg-[#f8f9ff] border border-blue-100/50 shadow-sm">
             <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-sm">
@@ -346,7 +356,7 @@ const HomeView: React.FC = () => {
             </div>
             <h5 className="text-lg font-bold text-slate-900 mb-2">Technical Roadmap</h5>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Don't just apply. Learn. We provide a step-by-step guide to bridge your current skill
+              Do not just apply. Learn. We provide a step-by-step guide to bridge your current skill
               gaps.
             </p>
           </div>
@@ -363,7 +373,6 @@ const HomeView: React.FC = () => {
         </div>
       </form>
 
-      {/* Modal Xóa */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
@@ -375,9 +384,9 @@ const HomeView: React.FC = () => {
               <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-6">
                 <span className="material-symbols-outlined text-red-600 text-3xl">warning</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-3">Xóa CV?</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">Delete CV?</h3>
               <p className="text-slate-600 mb-8">
-                Bạn có chắc chắn muốn xóa CV này? Hành động này không thể hoàn tác.
+                Are you sure you want to delete this CV? This action cannot be undone.
               </p>
               <div className="flex w-full gap-3">
                 <Button
@@ -385,14 +394,14 @@ const HomeView: React.FC = () => {
                   onClick={cancelDelete}
                   className="flex-1 py-3.5 px-6 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200"
                 >
-                  Hủy
+                  Cancel
                 </Button>
                 <Button
                   variant="unstyled"
                   onClick={confirmDelete}
                   className="flex-1 py-3.5 px-6 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700"
                 >
-                  Xóa
+                  Delete
                 </Button>
               </div>
             </div>

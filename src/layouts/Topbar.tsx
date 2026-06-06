@@ -111,12 +111,11 @@ const Topbar: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200">
                   <div className="p-4 border-b border-slate-100 bg-slate-50">
                     <p className="font-bold text-slate-900 truncate">
-                      {userInfo?.fullName || "Tài Khoản EpicCV"}
+                      {userInfo?.fullName || "EpicCV Account"}
                     </p>
                     <p className="text-xs text-slate-500 truncate mt-0.5">{userInfo?.email}</p>
                   </div>
                   <div className="py-2 border-b border-slate-100">
-                    {/* Đã xóa nút Profile, chỉ giữ lại Settings */}
                     <Button
                       variant="unstyled"
                       onClick={() => handleNavigate("/settings")}

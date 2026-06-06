@@ -3,8 +3,13 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { processCVStart, getSavedCVs, deleteCV } from "../../api/cvApi";
-
 import type { HomeFormValues, SavedCV, UseHomeViewReturn } from "./types";
+
+const SUPPORTED_DOCUMENT_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
 
 export const useHomeView = (): UseHomeViewReturn => {
   const navigate = useNavigate();
@@ -21,9 +26,9 @@ export const useHomeView = (): UseHomeViewReturn => {
 
   const [isUploadingCv, setIsUploadingCv] = useState(false);
   const [isUploadingJd, setIsUploadingJd] = useState(false);
+  const [savedCVs, setSavedCVs] = useState<SavedCV[]>([]);
 
   const progressIntervalRef = useRef<number | null>(null);
-  const [savedCVs, setSavedCVs] = useState<SavedCV[]>([]);
 
   const {
     register,
@@ -38,10 +43,17 @@ export const useHomeView = (): UseHomeViewReturn => {
         const cvs = await getSavedCVs();
         setSavedCVs(cvs);
       } catch {
-        console.error("Lỗi lấy danh sách CV");
+        console.error("Unable to load saved CVs");
       }
     };
+
     fetchCVs();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
+    };
   }, []);
 
   const toggleSelectCv = (index: number) =>
@@ -50,54 +62,61 @@ export const useHomeView = (): UseHomeViewReturn => {
   const validateFile = (
     fileList?: FileList,
     maxSizeMB = 5,
-    allowedTypes = [
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ]
+    allowedTypes = SUPPORTED_DOCUMENT_TYPES
   ) => {
     if (!fileList || fileList.length === 0) return true;
     const file = fileList[0];
-    if (!allowedTypes.includes(file.type)) return "Chỉ chấp nhận file PDF hoặc DOCX";
-    if (file.size > maxSizeMB * 1024 * 1024) return `Kích thước file tối đa là ${maxSizeMB}MB`;
+    if (!allowedTypes.includes(file.type)) return "Only PDF and DOCX files are supported";
+    if (file.size > maxSizeMB * 1024 * 1024) return `Maximum file size is ${maxSizeMB}MB`;
     return true;
   };
 
   const handleFakeUpload = (type: "cv" | "jd") => {
     if (type === "cv") {
       setIsUploadingCv(true);
-      setTimeout(() => setIsUploadingCv(false), 800);
+      window.setTimeout(() => setIsUploadingCv(false), 800);
     } else {
       setIsUploadingJd(true);
-      setTimeout(() => setIsUploadingJd(false), 800);
+      window.setTimeout(() => setIsUploadingJd(false), 800);
     }
   };
 
   const onAnalyze = async (data: HomeFormValues) => {
     const cvFileFromForm = data.cvFile?.[0];
     const jdFileFromForm = data.jdFile?.[0];
-    const jdText = data.jdText;
+    const jdText = data.jdText?.trim();
+    const selectedSavedCv = selectedCv !== null ? savedCVs[selectedCv] : undefined;
 
-    if (!cvFileFromForm) {
-      toast.error("Vui lòng tải lên file CV!");
+    if (credentialsTab === "upload" && !cvFileFromForm) {
+      toast.error("Please upload a CV file.");
+      return;
+    }
+    if (credentialsTab === "saved" && !selectedSavedCv?.id) {
+      toast.error("Please select a saved CV.");
       return;
     }
     if (opportunityTab === "paste" && !jdText) {
-      toast.error("Vui lòng nhập nội dung JD!");
+      toast.error("Please enter the job description.");
       return;
     }
     if (opportunityTab === "upload" && !jdFileFromForm) {
-      toast.error("Vui lòng tải lên file JD!");
+      toast.error("Please upload a job description file.");
       return;
     }
 
-    const toastId = toast.loading("Khởi tạo quá trình phân tích...");
+    const toastId = toast.loading("Starting analysis...");
     setIsLoading(true);
     setAnalyzeProgress(0);
-    setLoadingMessage("Đang kết nối...");
+    setLoadingMessage("Connecting...");
 
     try {
       const formData = new FormData();
-      formData.append("file", cvFileFromForm);
+      if (credentialsTab === "upload" && cvFileFromForm) {
+        formData.append("file", cvFileFromForm);
+      }
+      if (credentialsTab === "saved" && selectedSavedCv?.id) {
+        formData.append("saved_cv_id", selectedSavedCv.id);
+      }
       if (opportunityTab === "paste" && jdText) formData.append("jd_text", jdText);
       if (opportunityTab === "upload" && jdFileFromForm) formData.append("jd_file", jdFileFromForm);
 
@@ -126,31 +145,33 @@ export const useHomeView = (): UseHomeViewReturn => {
           eventSource.close();
           if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
           setIsLoading(false);
-        } else {
-          targetProgress = payload.progress;
-          setLoadingMessage(payload.message);
+          return;
+        }
 
-          if (payload.progress === 100) {
-            currentProgress = 100;
-            setAnalyzeProgress(100);
-            toast.success("Phân tích hoàn tất!", { id: toastId });
-            eventSource.close();
-            if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
-            setTimeout(() => {
-              navigate("/analysis", { state: { targetReportId: payload.resultId } });
-            }, 800);
-          }
+        targetProgress = payload.progress;
+        setLoadingMessage(payload.message);
+
+        if (payload.progress === 100) {
+          currentProgress = 100;
+          setAnalyzeProgress(100);
+          toast.success("Analysis complete!", { id: toastId });
+          eventSource.close();
+          if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
+          window.setTimeout(() => {
+            navigate("/analysis", { state: { targetReportId: payload.resultId } });
+          }, 800);
         }
       };
 
       eventSource.onerror = () => {
-        toast.error("Mất kết nối với máy chủ", { id: toastId });
+        toast.error("Lost connection to the server", { id: toastId });
         eventSource.close();
         if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
         setIsLoading(false);
       };
-    } catch {
-      toast.error("Không thể bắt đầu phân tích", { id: toastId });
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Unable to start analysis", { id: toastId });
       setIsLoading(false);
     }
   };
@@ -165,14 +186,18 @@ export const useHomeView = (): UseHomeViewReturn => {
     if (cvToDelete === null) return;
     const cvId = savedCVs[cvToDelete].id;
     try {
-      if (cvId) await deleteCV(cvId);
+      await deleteCV(cvId);
       setSavedCVs((prev) => prev.filter((_, i) => i !== cvToDelete));
-      toast.success("Đã xóa CV khỏi hệ thống");
+      setSelectedCv((prev) => {
+        if (prev === null) return null;
+        if (prev === cvToDelete) return null;
+        return prev > cvToDelete ? prev - 1 : prev;
+      });
+      toast.success("CV deleted successfully");
     } catch {
-      toast.error("Không thể xóa CV này");
+      toast.error("Unable to delete this CV");
     }
     setIsDeleteModalOpen(false);
-    if (selectedCv === cvToDelete) setSelectedCv(null);
     setCvToDelete(null);
   };
 

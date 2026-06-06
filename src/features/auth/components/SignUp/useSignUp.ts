@@ -25,9 +25,8 @@ export const useSignUp = () => {
   });
 
   const onSubmit = async (data: Record<string, string | boolean>) => {
-    // Xóa 'any'
     if (!turnstileToken) {
-      toast.error("Vui lòng xác thực bạn không phải là robot!");
+      toast.error("Please verify that you are not a robot.");
       return;
     }
 
@@ -41,21 +40,20 @@ export const useSignUp = () => {
       };
 
       const response = await apiClient.post("/auth/register", payload);
-      toast.success(response.data?.message || "Đăng ký thành công! Đang chuyển hướng...");
+      toast.success(response.data?.message || "Account created successfully. Redirecting...");
 
-      setTimeout(() => {
+      window.setTimeout(() => {
         navigate("/sign-in");
       }, 1500);
     } catch (error: unknown) {
-      // Xóa 'any'
       const err = error as { response?: { data?: { message?: string } } };
       const errorMessage = err.response?.data?.message;
 
       if (errorMessage === "EMAIL_ALREADY_EXISTS") {
-        toast.error("Email này đã được sử dụng. Vui lòng đăng nhập!", { duration: 4000 });
-        setTimeout(() => navigate("/sign-in"), 1500);
+        toast.error("This email is already in use. Please sign in.", { duration: 4000 });
+        window.setTimeout(() => navigate("/sign-in"), 1500);
       } else {
-        toast.error(errorMessage || "Đăng ký thất bại. Vui lòng thử lại!");
+        toast.error(errorMessage || "Registration failed. Please try again.");
       }
       setTurnstileToken("");
     } finally {
@@ -75,7 +73,7 @@ export const useSignUp = () => {
       redirect_uri: redirectUri,
       response_type: "code",
       scope: "openid offline",
-      state: state,
+      state,
     });
 
     window.location.href = `https://oauth2.mezon.ai/oauth2/auth?${params.toString()}`;

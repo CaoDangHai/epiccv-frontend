@@ -33,10 +33,10 @@ const RoadmapView: React.FC<RoadmapViewProps> = ({
                   <span className="material-symbols-outlined text-amber-500 text-3xl">help</span>
                 </div>
                 <div>
-                  <p className="text-xl font-black text-slate-900 mb-1">Xác nhận hoàn thành?</p>
+                  <p className="text-xl font-black text-slate-900 mb-1">Mark phase as complete?</p>
                   <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                    Bạn sắp đánh dấu Phase này là đã hoàn thành. Khối lộ trình sẽ được làm mờ để bạn
-                    tập trung vào các bước tiếp theo.
+                    This phase will be marked as complete and dimmed so you can focus on the next
+                    steps.
                   </p>
                 </div>
               </div>
@@ -46,14 +46,14 @@ const RoadmapView: React.FC<RoadmapViewProps> = ({
                   onClick={() => toast.dismiss(t.id)}
                   className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
-                  Hủy bỏ
+                  Cancel
                 </button>
                 <button
                   onClick={() => {
                     toast.dismiss(t.id);
                     handleToggleStepStatus(stepId, currentStatus).then(() => {
-                      toast.success("Tuyệt vời! Chúc mừng bạn đã hoàn thành Phase này!", {
-                        icon: "🎉",
+                      toast.success("Phase completed successfully!", {
+                        icon: "check",
                         style: {
                           borderRadius: "16px",
                           padding: "16px",
@@ -66,18 +66,17 @@ const RoadmapView: React.FC<RoadmapViewProps> = ({
                   className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/30 flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-[18px]">verified</span>
-                  Đồng ý
+                  Confirm
                 </button>
               </div>
             </div>
           </div>
         ),
         { duration: Infinity, position: "top-center" }
-      ); // Infinity để bắt buộc người dùng thao tác
+      );
     } else {
-      // Hủy Undo (từ Done sang To Do)
       handleToggleStepStatus(stepId, currentStatus).then(() => {
-        toast.success("Đã chuyển lại thành To Do", {
+        toast.success("Phase moved back to To Do", {
           style: { borderRadius: "16px", fontWeight: "bold" },
         });
       });

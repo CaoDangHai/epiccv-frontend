@@ -11,10 +11,11 @@ export interface HomeFormValues {
   jdFile: FileList;
 }
 export interface SavedCV {
-  id?: string;
+  id: string;
   name: string;
   meta: string;
   color: string;
+  created_at?: string;
 }
 
 export interface UseHomeViewReturn {

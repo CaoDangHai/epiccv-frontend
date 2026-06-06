@@ -45,7 +45,7 @@ export const useSettings = () => {
           provider: profile.provider || "local",
         });
       } catch {
-        toast.error("Không thể tải thông tin tài khoản");
+        toast.error("Unable to load account information");
       } finally {
         setIsLoading(false);
       }
@@ -61,9 +61,9 @@ export const useSettings = () => {
         phone: personalInfo.phone,
         location: personalInfo.location,
       });
-      toast.success("Đã cập nhật thông tin tài khoản!");
+      toast.success("Account information updated");
     } catch {
-      toast.error("Cập nhật thông tin thất bại");
+      toast.error("Unable to update account information");
     } finally {
       setIsSaving(false);
     }
@@ -71,7 +71,7 @@ export const useSettings = () => {
 
   const handleChangePassword = async () => {
     if (passwords.newPassword !== passwords.confirmPassword) {
-      return toast.error("Mật khẩu xác nhận không khớp!");
+      return toast.error("Password confirmation does not match");
     }
     setIsChangingPass(true);
     try {
@@ -79,20 +79,18 @@ export const useSettings = () => {
         oldPassword: passwords.oldPassword,
         newPassword: passwords.newPassword,
       });
-      toast.success("Đổi mật khẩu thành công!");
+      toast.success("Password changed successfully");
       setPasswords({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err?.response?.data?.message || "Đổi mật khẩu thất bại");
+      toast.error(err?.response?.data?.message || "Unable to change password");
     } finally {
       setIsChangingPass(false);
     }
   };
 
   const handleAvatarClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -103,20 +101,20 @@ export const useSettings = () => {
 
     const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      return toast.error("Chỉ hỗ trợ file ảnh (JPG, PNG, WEBP)");
+      return toast.error("Only JPG, PNG, and WEBP images are supported");
     }
     if (file.size > 2 * 1024 * 1024) {
-      return toast.error("Kích thước ảnh tối đa 2MB");
+      return toast.error("Maximum image size is 2MB");
     }
 
     setIsUploadingAvatar(true);
-    const toastId = toast.loading("Đang tải ảnh lên...");
+    const toastId = toast.loading("Uploading avatar...");
     try {
       const { avatarUrl } = await uploadAvatarAPI(file);
       setPersonalInfo((prev) => ({ ...prev, avatarUrl }));
-      toast.success("Cập nhật ảnh đại diện thành công", { id: toastId });
+      toast.success("Avatar updated successfully", { id: toastId });
     } catch {
-      toast.error("Không thể tải ảnh lên", { id: toastId });
+      toast.error("Unable to upload avatar", { id: toastId });
     } finally {
       setIsUploadingAvatar(false);
     }

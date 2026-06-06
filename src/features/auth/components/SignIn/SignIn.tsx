@@ -10,7 +10,6 @@ const SignIn: React.FC = () => {
 
   return (
     <main className="min-h-screen flex flex-col md:flex-row bg-slate-50 font-sans text-slate-900 selection:bg-blue-200 selection:text-blue-900">
-      {/* Cột trái: Artwork */}
       <section className="hidden md:flex w-1/2 relative bg-indigo-700 overflow-hidden items-center justify-center p-12">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-700 via-indigo-600 to-purple-700 opacity-90"></div>
         <div className="absolute top-0 left-0 w-full h-full">
@@ -37,7 +36,6 @@ const SignIn: React.FC = () => {
         </div>
       </section>
 
-      {/* Cột phải: Form đăng nhập */}
       <section className="flex-1 flex flex-col justify-center items-center p-6 md:p-24 bg-white relative">
         <div className="w-full max-w-md">
           <div className="md:hidden flex items-center gap-2 mb-12">
@@ -60,10 +58,10 @@ const SignIn: React.FC = () => {
                   className={`w-full px-4 py-3.5 ${errors.email ? "border-red-400 focus:ring-red-200" : "border-slate-200 focus:ring-blue-500"} placeholder:text-slate-400`}
                   placeholder="name@company.com"
                   {...register("email", {
-                    required: "Email là bắt buộc",
+                    required: "Email is required",
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Định dạng email không hợp lệ",
+                      message: "Invalid email format",
                     },
                   })}
                 />
@@ -92,8 +90,8 @@ const SignIn: React.FC = () => {
                 <Input
                   type="password"
                   className={`w-full pl-12 py-4 bg-slate-50 border ${errors.password ? "border-red-400 focus:ring-red-200" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/20"} rounded-xl focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 text-slate-900`}
-                  placeholder="••••••••"
-                  {...register("password", { required: "Trường này là bắt buộc" })}
+                  placeholder="Password"
+                  {...register("password", { required: "Password is required" })}
                 />
               </div>
               {errors.password && (
@@ -155,7 +153,7 @@ const SignIn: React.FC = () => {
 
           <div className="mt-12 text-center">
             <p className="text-sm text-slate-500">
-              Don't have an account yet?
+              Do not have an account yet?
               <Button
                 variant="unstyled"
                 onClick={goToSignUp}

@@ -1,7 +1,7 @@
 import { apiClient } from "../utils/apiClient";
 import type { AnalysisResult, Roadmap } from "../features/analysis/types";
+import type { SavedCV } from "../features/home/types";
 
-// Trả về jobId thay vì data để chạy SSE
 export const processCVStart = async (formData: FormData): Promise<{ jobId: string }> => {
   const response = await apiClient.post<{ jobId: string }>("/cv/process", formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -19,14 +19,13 @@ export const getAnalysisById = async (id: string): Promise<AnalysisResult> => {
   return response.data;
 };
 
-// Trả về jobId thay vì data
 export const generateRoadmapStart = async (analysisId: string): Promise<{ jobId: string }> => {
   const response = await apiClient.post<{ jobId: string }>(`/roadmap/generate/${analysisId}`);
   return response.data;
 };
 
 export const getRoadmapFromDb = async (analysisId: string): Promise<Roadmap | null> => {
-  const response = await apiClient.get(`/roadmap/${analysisId}`);
+  const response = await apiClient.get<Roadmap | null>(`/roadmap/${analysisId}`);
   return response.data || null;
 };
 
@@ -35,14 +34,16 @@ export const updateStepStatus = async (stepId: string, isCompleted: boolean) => 
   return response.data;
 };
 
-export const getSavedCVs = async () => {
-  const response = await apiClient.get("/cv/saved");
+export const getSavedCVs = async (): Promise<SavedCV[]> => {
+  const response = await apiClient.get<SavedCV[]>("/cv/saved");
   return response.data;
 };
+
 export const deleteCV = async (id: string) => {
   const response = await apiClient.delete(`/cv/saved/${id}`);
   return response.data;
 };
+
 export const deleteAllHistory = async () => {
   const response = await apiClient.delete("/cv/history");
   return response.data;

@@ -34,7 +34,6 @@ export interface Report {
   phases: Record<number, Phase>;
 }
 
-// --- CÁC TYPE MỚI THÊM VÀO ---
 export interface OverallAssessment {
   summary: string;
   strengths: string[];
@@ -68,7 +67,6 @@ export interface AnalysisResult {
   created_at?: string;
 }
 
-// --- ROADMAP TYPES ---
 export interface LearningResource {
   title: string;
   url: string;

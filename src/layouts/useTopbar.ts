@@ -18,7 +18,7 @@ export const useTopbar = () => {
         const data = await getProfile();
         setUserInfo(data);
       } catch {
-        console.error("Không thể tải thông tin Topbar");
+        console.error("Unable to load topbar profile");
       }
     };
     fetchUser();
@@ -38,7 +38,11 @@ export const useTopbar = () => {
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
 
   const handleLogout = () => {
+    localStorage.removeItem("access_token");
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("user_info");
+    setShowLogoutConfirm(false);
+    setShowProfileMenu(false);
     navigate("/sign-in");
   };
 

@@ -16,12 +16,10 @@ const AppRoutes: React.FC = () => (
     <Routes>
       <Route path="/" element={<Navigate to="/sign-in" replace />} />
 
-      {/* Routes Không cần Layout (Auth) */}
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-up" element={<SignUp />} />
       <Route path="/auth/mezon/callback" element={<MezonCallback />} />
 
-      {/* Routes Cần Layout (Đã Login) */}
       <Route element={<MainLayout />}>
         <Route path="/home" element={<HomeView />} />
         <Route path="/analysis" element={<AnalysisView />} />

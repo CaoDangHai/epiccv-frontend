@@ -14,7 +14,6 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   let baseClass = "";
 
-  // Nếu không phải là dạng unstyled (loại bỏ hoàn toàn CSS mặc định), ta sẽ gắn các base style
   if (variant !== "unstyled") {
     baseClass +=
       "inline-flex items-center justify-center gap-2 font-semibold transition-all active:scale-95 px-6 py-3 ";
@@ -38,7 +37,6 @@ export const Button: React.FC<ButtonProps> = ({
     }
   }
 
-  // Gắn style theo từng Variant (kiểu nút)
   switch (variant) {
     case "primary":
       baseClass += "bg-[var(--color-primary)] text-white hover:shadow-lg hover:brightness-110 ";
@@ -61,7 +59,6 @@ export const Button: React.FC<ButtonProps> = ({
   }
 
   return (
-    // SỬA LỖI TẠI ĐÂY: Dùng thẻ <button> viết thường của HTML
     <button className={`${baseClass} ${className}`.trim()} {...props}>
       {children}
     </button>
