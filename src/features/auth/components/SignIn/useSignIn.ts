@@ -4,14 +4,14 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { apiClient } from "../../../../utils/apiClient";
 
-const generateMezonState = (length: number = 11): string => {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-};
+// const generateMezonState = (length: number = 11): string => {
+//   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//   let result = "";
+//   for (let i = 0; i < length; i++) {
+//     result += characters.charAt(Math.floor(Math.random() * characters.length));
+//   }
+//   return result;
+// };
 
 export const useSignIn = () => {
   const navigate = useNavigate();
@@ -48,22 +48,28 @@ export const useSignIn = () => {
     }
   };
 
-  const handleMezonSignIn = () => {
+  const handleMezonSignIn = async () => {
     const clientId = import.meta.env.VITE_MEZON_CLIENT_ID || "";
     const redirectUri = import.meta.env.VITE_MEZON_REDIRECT_URI || "";
-    const state = generateMezonState(11);
 
-    localStorage.setItem("mezon_oauth_state", state);
+    try {
+      const response = await apiClient.get("/auth/mezon/state");
+      const state = response.data.state;
 
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: "code",
-      scope: "openid offline",
-      state,
-    });
+      localStorage.setItem("mezon_oauth_state", state);
 
-    window.location.href = `https://oauth2.mezon.ai/oauth2/auth?${params.toString()}`;
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: "code",
+        scope: "openid offline",
+        state,
+      });
+      window.location.href = `https://oauth2.mezon.ai/oauth2/auth?${params.toString()}`;
+    } catch (error) {
+      console.error("Lỗi Mezon Sign In:", error);
+      toast.error("Không thể khởi tạo phiên đăng nhập an toàn với Mezon.");
+    }
   };
 
   const goToSignUp = () => navigate("/sign-up");
