@@ -16,6 +16,7 @@ const SignUp: React.FC = () => {
     watch,
     setTurnstileToken,
     isLoading,
+    turnstileRef,
   } = useSignUp();
 
   const currentPassword = watch("password");
@@ -217,11 +218,13 @@ const SignUp: React.FC = () => {
               </label>
             </div>
 
-            <div className="flex justify-center py-2">
+            <div className="mb-6 flex justify-center">
               <Turnstile
+                ref={turnstileRef}
                 siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ""}
                 onSuccess={(token) => setTurnstileToken(token)}
-                options={{ theme: "light" }}
+                onError={() => setTurnstileToken("")}
+                onExpire={() => setTurnstileToken("")}
               />
             </div>
 
